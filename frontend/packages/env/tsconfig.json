@@ -1,0 +1,3 @@
+{
+  "extends": "@convex-zen/config/tsconfig.base.json"
+}

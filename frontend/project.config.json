@@ -1,0 +1,14 @@
+{
+  "projectName": "convex-zen",
+  "workerName": "convex-zen-web-abdssamie",
+  "cloudflare": {
+    "compatibilityDate": "2026-04-17",
+    "compatibilityFlags": ["nodejs_compat"],
+    "observabilityEnabled": true
+  },
+  "env": {
+    "frontend": ["VITE_ANALYTICS_WRITE_KEY", "VITE_CONVEX_URL", "VITE_CONVEX_SITE_URL"],
+    "worker": ["SITE_URL"],
+    "convexProduction": ["SITE_URL", "AUTH_TRUSTED_ORIGINS", "ANALYTICS_WRITE_KEY"]
+  }
+}

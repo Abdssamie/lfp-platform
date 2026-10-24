@@ -1,0 +1,31 @@
+# Backend Dockerfile for LFP Platform (FastAPI + Python 3.13 + uv)
+FROM ghcr.io/astral-sh/uv:python3.13-bookworm-slim AS base
+
+WORKDIR /app
+
+# Set environment variables for optimized Python execution
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PORT=8000
+
+# Install production dependencies first (cached layer)
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
+
+# Copy application code and dataset files
+COPY lfp_platform ./lfp_platform
+COPY server ./server
+COPY main.py ./
+COPY data ./data
+
+# Make virtualenv binaries available
+ENV PATH="/app/.venv/bin:$PATH"
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 \
+  CMD python3 -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/health')" || exit 1
+
+CMD ["uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8000"]

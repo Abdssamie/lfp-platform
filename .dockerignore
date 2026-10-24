@@ -1,0 +1,34 @@
+# Version control & IDE
+.git
+.gitignore
+.agents
+.gemini
+.idea
+.vscode
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+
+# Node / Frontend
+node_modules
+frontend/node_modules
+frontend/apps/web/node_modules
+frontend/apps/web/.wrangler
+frontend/apps/web/dist
+frontend/.pnpm-store
+
+# Logs and environment files
+*.log
+.env
+.env.local
+.env.*.local
+.dev.vars

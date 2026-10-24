@@ -1,0 +1,74 @@
+# Python build artifacts
+/build/
+/develop-eggs/
+/dist/
+/downloads/
+/eggs/
+/.eggs/
+/lib/
+/lib64/
+/parts/
+/sdist/
+/var/
+/wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+/.venv/
+/env/
+/venv/
+/ENV/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node / Monorepo dependencies & build output
+node_modules/
+**/node_modules/
+**/dist/
+**/.wrangler/
+**/.dev.vars
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment & Secrets
+.env
+.env.local
+.env.*.local
+*.local
+!.env.example
+
+# Intlayer build cache
+**/.intlayer/
+
+# Database & local state
+*.db
+*.sqlite3
+.states/
+.web/
+
+# OS and IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Large raw datasets (> 50MB rejected by GitHub)
+data/lfp_lg_chem_csv/gitt/gitt_0_17C*.csv
+data/sintef/SINTEF__SLPBA842124HV-06__20241011__DCIR__0p1C__25degC__Novonix.csv
+data/lg_chem_raw_mat/
+*.mat

@@ -1,0 +1,102 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+      VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL }}
+      VITE_CONVEX_SITE_URL: ${{ secrets.VITE_CONVEX_SITE_URL }}
+      VITE_ANALYTICS_WRITE_KEY: ${{ secrets.VITE_ANALYTICS_WRITE_KEY }}
+      SITE_URL: ${{ secrets.SITE_URL }}
+      AUTH_TRUSTED_ORIGINS: ${{ secrets.AUTH_TRUSTED_ORIGINS }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      
+      # Auth
+      BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      ANALYTICS_WRITE_KEY: ${{ secrets.ANALYTICS_WRITE_KEY }}
+      
+      # Brevo
+      BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+      BREVO_WEBHOOK_TOKEN: ${{ secrets.BREVO_WEBHOOK_TOKEN }}
+      BREVO_APP_NAME: ${{ secrets.BREVO_APP_NAME }}
+      BREVO_SENDER_EMAIL: ${{ secrets.BREVO_SENDER_EMAIL }}
+      BREVO_SENDER_NAME: ${{ secrets.BREVO_SENDER_NAME }}
+      BREVO_REPLY_TO_EMAIL: ${{ secrets.BREVO_REPLY_TO_EMAIL }}
+      BREVO_REPLY_TO_NAME: ${{ secrets.BREVO_REPLY_TO_NAME }}
+      
+      # R2
+      R2_TOKEN: ${{ secrets.R2_TOKEN }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      
+      # Polar
+      POLAR_ORGANIZATION_TOKEN: ${{ secrets.POLAR_ORGANIZATION_TOKEN }}
+      POLAR_WEBHOOK_SECRET: ${{ secrets.POLAR_WEBHOOK_SECRET }}
+      POLAR_SERVER: ${{ secrets.POLAR_SERVER }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Sync project config
+        run: pnpm run sync:project-config
+
+      - name: Sync secrets
+        run: node scripts/sync-secrets.mjs
+
+      - name: Validate deploy config
+        run: pnpm run doctor:deploy
+
+      - name: Deploy Convex backend
+        run: |
+          cd packages/backend
+          npx convex deploy
+
+      - name: Provision analytics site
+        run: |
+          cd packages/backend
+          npx convex run --prod analytics:provisionDefaultSite
+
+      - name: Deploy app
+        run: |
+          cd apps/web
+          pnpm run deploy
+
+      - name: Verify deployment
+        run: |
+          WORKER_NAME=$(node -e "console.log(require('./project.config.json').workerName)")
+          DEPLOYMENT_URL="https://${WORKER_NAME}.abdessamie-elmoubarki.workers.dev"
+          echo "Checking $DEPLOYMENT_URL..."
+          sleep 10
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$DEPLOYMENT_URL" || echo "000")
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✓ Deployment verified: $HTTP_CODE"
+          else
+            echo "✗ Deployment failed: got $HTTP_CODE"
+            exit 1
+          fi
