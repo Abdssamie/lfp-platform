@@ -2,10 +2,12 @@
 
 import { BaseLayout } from "@/components/layouts/base-layout";
 import { BTMSPanel } from "@/components/battery/BTMSPanel";
+import { usePlatformTranslation } from "@/lib/translations";
 
 export default function BTMSPage() {
-  const pageTitle = "Gestion Thermique BTMS — Simulation Plaque Froide & Équilibre de Bernardi";
-  const pageDesc = "Tableau des États Transitoires · Modèle d'Échauffement 1D Couplé (SciPy RK45) · Convection Dittus-Boelter (Eau-Glycol 50/50)";
+  const { t } = usePlatformTranslation();
+  const pageTitle = t.btms.pageTitle;
+  const pageDesc = t.btms.pageDesc;
 
   return (
     <BaseLayout title={pageTitle} description={pageDesc}>

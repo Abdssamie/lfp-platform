@@ -13,6 +13,7 @@ import {
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import type { ChartConfig } from "@/components/ui/chart";
 import type { ScreeningScatterPoint } from "@/types/api";
+import { usePlatformTranslation } from "@/lib/translations";
 
 interface ScreeningChartProps {
   cells: ScreeningScatterPoint[];
@@ -22,31 +23,33 @@ interface ScreeningChartProps {
   selectedCellId?: string;
 }
 
-const chartConfig = {
-  gradeA: {
-    label: "Grade A — Pack Véhicule Électrique (EV)",
-    color: "#10b981",
-  },
-  gradeB: {
-    label: "Grade B — Stockage Réseau (BESS)",
-    color: "#f59e0b",
-  },
-  scrap: {
-    label: "Quarantaine / Rebut (Micro-court-circuit)",
-    color: "#ef4444",
-  },
-} satisfies ChartConfig;
-
 export function ScreeningChart({
   cells,
   kThreshold = 0.15,
   dcirThreshold = 1.8,
   onSelectCell,
 }: ScreeningChartProps) {
+  const { t, isFr } = usePlatformTranslation();
+
+  const dynamicChartConfig = {
+    gradeA: {
+      label: t.formation.gradeAChartLabel,
+      color: "#10b981",
+    },
+    gradeB: {
+      label: t.formation.gradeBChartLabel,
+      color: "#f59e0b",
+    },
+    scrap: {
+      label: t.formation.scrapChartLabel,
+      color: "#ef4444",
+    },
+  } satisfies ChartConfig;
+
   if (cells.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center font-mono text-xs text-muted-foreground">
-        Aucune donnée de tri métrologique enregistrée.
+        {t.formation.noCellsFound}
       </div>
     );
   }
@@ -75,7 +78,7 @@ export function ScreeningChart({
   };
 
   return (
-    <ChartContainer config={chartConfig} className="h-76 w-full">
+    <ChartContainer config={dynamicChartConfig} className="h-56 sm:h-72 lg:h-76 w-full">
       <ScatterChart margin={{ top: 12, right: 24, bottom: 28, left: 4 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.18)" />
 
@@ -89,7 +92,7 @@ export function ScreeningChart({
           axisLine={{ stroke: "rgba(148, 163, 184, 0.3)" }}
           tickLine={{ stroke: "rgba(148, 163, 184, 0.3)" }}
           label={{
-            value: "Taux d'auto-décharge — K = dV/dt (mV/jour)",
+            value: t.formation.kAxisLabel,
             position: "insideBottom",
             offset: -16,
             fill: "#e2e8f0",
@@ -109,7 +112,7 @@ export function ScreeningChart({
           tickLine={{ stroke: "rgba(148, 163, 184, 0.3)" }}
           width={52}
           label={{
-            value: "Résistance DCIR (mΩ)",
+            value: t.formation.dcirAxisLabel,
             angle: -90,
             position: "insideLeft",
             offset: 14,
@@ -144,7 +147,7 @@ export function ScreeningChart({
           strokeWidth={1.5}
           label={{
             ...refLabelStyle,
-            value: `Seuil K = ${kThreshold.toFixed(2)} mV/j`,
+            value: isFr ? `Seuil K = ${kThreshold.toFixed(2)} mV/j` : `K Limit = ${kThreshold.toFixed(2)} mV/d`,
             fill: "#f87171",
             position: "insideTopLeft",
           }}
@@ -158,7 +161,7 @@ export function ScreeningChart({
           strokeWidth={1.5}
           label={{
             ...refLabelStyle,
-            value: `Seuil DCIR = ${dcirThreshold.toFixed(1)} mΩ`,
+            value: isFr ? `Seuil DCIR = ${dcirThreshold.toFixed(1)} mΩ` : `DCIR Limit = ${dcirThreshold.toFixed(1)} mΩ`,
             fill: "#fbbf24",
             position: "insideTopRight",
           }}

@@ -6,6 +6,7 @@ import {
   Scripts,
   createRootRouteWithContext,
   useParams,
+  useLocation,
   useRouteContext,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
@@ -74,8 +75,11 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation();
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const pathLocale = pathSegments[0] === "en" || pathSegments[0] === "fr" ? pathSegments[0] : undefined;
   const params = useParams({ strict: false });
-  const locale = (params as { locale?: string })?.locale ?? defaultLocale;
+  const locale = (params as { locale?: string })?.locale ?? pathLocale ?? defaultLocale;
 
   return (
     <html dir={getHTMLTextDir(locale)} lang={locale} suppressHydrationWarning>

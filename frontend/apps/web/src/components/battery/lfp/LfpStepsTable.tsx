@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { LfpStepSummary } from "@/types/api";
 import { cn } from "@/lib/utils";
+import { usePlatformTranslation } from "@/lib/translations";
 
 interface LfpStepsTableProps {
   steps: LfpStepSummary[];
@@ -30,6 +31,7 @@ export function LfpStepsTable({
   selectedStepIndex,
   onSelectStep,
 }: LfpStepsTableProps) {
+  const { t } = usePlatformTranslation();
   const [filterRegime, setFilterRegime] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedStepIndex, setExpandedStepIndex] = useState<number | null>(null);
@@ -41,12 +43,12 @@ export function LfpStepsTable({
 
   const formatDuration = (sec: number) => {
     if (sec >= 3600) {
-      return `${(sec / 3600).toFixed(1)} h`;
+      return `${(sec / 3600).toFixed(1)} ${t.common.hours}`;
     }
     if (sec >= 60) {
-      return `${(sec / 60).toFixed(0)} min`;
+      return `${(sec / 60).toFixed(0)} ${t.common.minutes}`;
     }
-    return `${sec.toFixed(0)} s`;
+    return `${sec.toFixed(0)} ${t.common.seconds}`;
   };
 
   const filteredSteps = steps.filter((s) => {
@@ -67,44 +69,44 @@ export function LfpStepsTable({
   return (
     <div className="flex flex-col gap-2 w-full">
       {/* Sleek, Non-Cluttered Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 p-1.5 rounded-lg border border-border bg-card">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-1.5 rounded-lg border border-border bg-card">
         {/* Subtle Filter Segment */}
-        <div className="flex items-center gap-1 font-mono text-xs">
+        <div className="flex flex-wrap items-center gap-1 font-mono text-xs">
           <Button
             type="button"
             size="sm"
             variant={filterRegime === "all" ? "secondary" : "ghost"}
             onClick={() => setFilterRegime("all")}
-            className="h-7 text-xs px-2.5 font-mono cursor-pointer"
+            className="h-7 text-xs px-2 sm:px-2.5 font-mono cursor-pointer"
           >
-            Tous les Essais ({steps.length})
+            {t.common.all} ({steps.length})
           </Button>
           <Button
             type="button"
             size="sm"
             variant={filterRegime === "Constant Current" ? "secondary" : "ghost"}
             onClick={() => setFilterRegime("Constant Current")}
-            className="h-7 text-xs px-2.5 font-mono cursor-pointer"
+            className="h-7 text-xs px-2 sm:px-2.5 font-mono cursor-pointer"
           >
-            Courant Constant ({ccCount})
+            {t.cyclers.filterCc} ({ccCount})
           </Button>
           <Button
             type="button"
             size="sm"
             variant={filterRegime === "GITT Titration" ? "secondary" : "ghost"}
             onClick={() => setFilterRegime("GITT Titration")}
-            className="h-7 text-xs px-2.5 font-mono cursor-pointer"
+            className="h-7 text-xs px-2 sm:px-2.5 font-mono cursor-pointer"
           >
-            GITT 0.33C ({gittCount})
+            {t.cyclers.filterGitt} ({gittCount})
           </Button>
           <Button
             type="button"
             size="sm"
             variant={filterRegime === "Dynamic EV Drive" ? "secondary" : "ghost"}
             onClick={() => setFilterRegime("Dynamic EV Drive")}
-            className="h-7 text-xs px-2.5 font-mono cursor-pointer"
+            className="h-7 text-xs px-2 sm:px-2.5 font-mono cursor-pointer"
           >
-            Profil VE ({driveCount})
+            {t.cyclers.filterDrive} ({driveCount})
           </Button>
         </div>
 
@@ -113,8 +115,8 @@ export function LfpStepsTable({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filtrer étape ou régime..."
-          className="h-7 w-48 text-xs font-mono px-2"
+          placeholder={t.cyclers.filterPlaceholder}
+          className="h-7 w-full sm:w-44 text-xs font-mono px-2 sm:ml-auto"
         />
       </div>
 
@@ -124,16 +126,16 @@ export function LfpStepsTable({
           <TableHeader>
             <TableRow className="border-b border-border bg-muted/30">
               <TableHead className="w-8 py-2 px-2 text-center">
-                <span className="sr-only">Déplier</span>
+                <span className="sr-only">Toggle</span>
               </TableHead>
-              <TableHead className="w-12 font-mono text-xs py-2">Étape</TableHead>
-              <TableHead className="font-mono text-xs py-2">Régime &amp; Protocole</TableHead>
-              <TableHead className="font-mono text-xs py-2">Type</TableHead>
-              <TableHead className="font-mono text-xs py-2 text-right">Durée</TableHead>
-              <TableHead className="font-mono text-xs py-2 text-right">Courant</TableHead>
-              <TableHead className="font-mono text-xs py-2 text-right">Capacité</TableHead>
-              <TableHead className="font-mono text-xs py-2 text-right">Énergie</TableHead>
-              <TableHead className="font-mono text-xs py-2 text-right">Plage V</TableHead>
+              <TableHead className="w-12 font-mono text-xs py-2">{t.cyclers.thStep}</TableHead>
+              <TableHead className="font-mono text-xs py-2">{t.cyclers.thRegime}</TableHead>
+              <TableHead className="font-mono text-xs py-2 hidden sm:table-cell">{t.cyclers.thType}</TableHead>
+              <TableHead className="font-mono text-xs py-2 text-right">{t.cyclers.thDuration}</TableHead>
+              <TableHead className="font-mono text-xs py-2 text-right hidden md:table-cell">{t.cyclers.thCurrent}</TableHead>
+              <TableHead className="font-mono text-xs py-2 text-right">{t.cyclers.thCapacity}</TableHead>
+              <TableHead className="font-mono text-xs py-2 text-right hidden md:table-cell">{t.cyclers.thEnergy}</TableHead>
+              <TableHead className="font-mono text-xs py-2 text-right hidden lg:table-cell">{t.cyclers.thVoltageRange}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -143,7 +145,7 @@ export function LfpStepsTable({
                   colSpan={9}
                   className="h-20 text-center font-mono text-xs text-muted-foreground"
                 >
-                  Aucune étape ne correspond aux critères.
+                  {t.cyclers.noStepsFound}
                 </TableCell>
               </TableRow>
             ) : (
@@ -184,7 +186,7 @@ export function LfpStepsTable({
                           <span className="text-[10px] text-muted-foreground">{s.c_rate}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="py-2">
+                      <TableCell className="py-2 hidden sm:table-cell">
                         <Badge variant="outline" className="text-[10px] font-mono h-4 px-1.5 font-normal">
                           {s.step_type}
                         </Badge>
@@ -192,16 +194,16 @@ export function LfpStepsTable({
                       <TableCell className="py-2 text-right text-muted-foreground">
                         {formatDuration(s.duration_s)}
                       </TableCell>
-                      <TableCell className="py-2 text-right font-medium text-foreground">
+                      <TableCell className="py-2 text-right font-medium text-foreground hidden md:table-cell">
                         {s.current_a.toFixed(2)} A
                       </TableCell>
                       <TableCell className="py-2 text-right font-bold text-foreground">
                         {s.capacity_ah.toFixed(2)} Ah
                       </TableCell>
-                      <TableCell className="py-2 text-right font-semibold text-foreground">
+                      <TableCell className="py-2 text-right font-semibold text-foreground hidden md:table-cell">
                         {s.energy_wh.toFixed(1)} Wh
                       </TableCell>
-                      <TableCell className="py-2 text-right text-muted-foreground text-[11px]">
+                      <TableCell className="py-2 text-right text-muted-foreground text-[11px] hidden lg:table-cell">
                         {s.min_v.toFixed(2)}V – {s.max_v.toFixed(2)}V
                       </TableCell>
                     </TableRow>
@@ -215,14 +217,14 @@ export function LfpStepsTable({
                               {/* 1. Densité Énergétique */}
                               <div className="space-y-1">
                                 <span className="text-xs font-medium text-muted-foreground block">
-                                  Densité Spécifique
+                                  {t.cyclers.specificDensity}
                                 </span>
                                 <div className="flex items-baseline gap-2">
                                   <span className="text-base font-bold text-foreground font-mono">
                                     {specificEnergyWhKg} Wh/kg
                                   </span>
                                   <span className="text-xs text-muted-foreground font-normal">
-                                    (cellule 850g)
+                                    {t.cyclers.cellBasis}
                                   </span>
                                 </div>
                               </div>
@@ -230,14 +232,14 @@ export function LfpStepsTable({
                               {/* 2. Fraction Capacité */}
                               <div className="space-y-1">
                                 <span className="text-xs font-medium text-muted-foreground block">
-                                  Fraction Capacité
+                                  {t.cyclers.capacityFraction}
                                 </span>
                                 <div className="flex items-baseline gap-2">
                                   <span className="text-base font-bold text-foreground font-mono">
                                     {((s.capacity_ah / 50) * 100).toFixed(1)}%
                                   </span>
                                   <span className="text-xs text-muted-foreground font-normal">
-                                    (base 50Ah)
+                                    {t.cyclers.basis50Ah}
                                   </span>
                                 </div>
                               </div>
@@ -245,14 +247,14 @@ export function LfpStepsTable({
                               {/* 3. Amplitude Tension */}
                               <div className="space-y-1">
                                 <span className="text-xs font-medium text-muted-foreground block">
-                                  Amplitude Tension
+                                  {t.cyclers.voltageDelta}
                                 </span>
                                 <div className="flex items-baseline gap-2">
                                   <span className="text-base font-bold text-foreground font-mono">
                                     {((s.max_v - s.min_v) * 1000).toFixed(0)} mV
                                   </span>
                                   <span className="text-xs text-muted-foreground font-normal">
-                                    (&Delta;V transitoire)
+                                    {t.cyclers.transientDelta}
                                   </span>
                                 </div>
                               </div>
@@ -260,14 +262,14 @@ export function LfpStepsTable({
                               {/* 4. Points de Mesure */}
                               <div className="space-y-1">
                                 <span className="text-xs font-medium text-muted-foreground block">
-                                  Points de Mesure
+                                  {t.cyclers.samplingPoints}
                                 </span>
                                 <div className="flex items-baseline gap-2">
                                   <span className="text-base font-bold text-foreground font-mono">
                                     {s.point_count.toLocaleString()}
                                   </span>
                                   <span className="text-xs text-muted-foreground font-normal">
-                                    (échantillons)
+                                    {t.cyclers.samples}
                                   </span>
                                 </div>
                               </div>

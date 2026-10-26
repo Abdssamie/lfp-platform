@@ -23,20 +23,26 @@ import { LfpDriveProfileChart } from "@/components/battery/lfp/LfpDriveProfileCh
 import { MOCK_LFP } from "@/lib/mock-data";
 import { fetchLfpDataset } from "@/lib/api";
 import type { LfpDatasetResponse } from "@/types/api";
+import { usePlatformTranslation } from "@/lib/translations";
 
 export default function CyclersPage() {
+  const { t } = usePlatformTranslation();
   const [lfpData, setLfpData] = React.useState<LfpDatasetResponse>(MOCK_LFP);
   const [selectedRegime, setSelectedRegime] = React.useState<"cc" | "gitt" | "drive">("cc");
   const [selectedStepIndex, setSelectedStepIndex] = React.useState<number | null>(null);
 
   React.useEffect(() => {
-    void fetchLfpDataset().then((res) => {
-      if (res) setLfpData(res);
-    });
+    void fetchLfpDataset()
+      .then((res) => {
+        if (res) setLfpData(res);
+      })
+      .catch((err) => {
+        console.warn("fetchLfpDataset fallback to simulated dataset:", err);
+      });
   }, []);
 
-  const pageTitle = "Laboratoire de Cyclage — Caractérisation LFP 50Ah";
-  const pageDesc = "Protocoles Haute Précision : Pseudo-OCV (C/12 & C/6) · Cinétique GITT (118.4h) · Cycles Dynamiques VE · LG Chem Prismatic LiFePO₄ / Graphite";
+  const pageTitle = t.cyclers.pageTitle;
+  const pageDesc = t.cyclers.pageDesc;
 
   return (
     <BaseLayout title={pageTitle} description={pageDesc}>
@@ -46,23 +52,23 @@ export default function CyclersPage() {
           data-tour="cyclers-kpis"
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-border/60"
         >
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="font-mono text-muted-foreground">Spécimen d'Essai:</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="font-mono text-muted-foreground">{t.cyclers.specimenLabel}</span>
             <Badge variant="outline" className="font-mono text-xs">
-              LG Chem 50Ah (Prismatique)
+              {t.cyclers.specimenValue}
             </Badge>
             <Badge variant="outline" className="font-mono text-xs">
-              LiFePO₄ / Graphite
+              {t.cyclers.chemistry}
             </Badge>
             <Badge variant="outline" className="font-mono text-xs">
-              Plateau Biphasique: {lfpData.metadata.plateau_fraction_pct.toFixed(1)}% (3.20V – 3.35V)
+              {t.cyclers.biphasicPlateau} {lfpData.metadata.plateau_fraction_pct.toFixed(1)}% (3.20V–3.35V)
             </Badge>
             <Badge variant="outline" className="font-mono text-xs">
-              Fenêtre: {lfpData.metadata.min_voltage_v.toFixed(2)}V – {lfpData.metadata.max_voltage_v.toFixed(2)}V
+              {lfpData.metadata.min_voltage_v.toFixed(2)}V – {lfpData.metadata.max_voltage_v.toFixed(2)}V
             </Badge>
             <Badge variant="outline" className="font-mono text-xs gap-1">
               <CheckCircle2 className="size-3" />
-              12 Étapes Validées (148.1h)
+              {t.cyclers.validatedSteps}
             </Badge>
           </div>
         </div>
@@ -84,14 +90,14 @@ export default function CyclersPage() {
         <div data-tour="cyclers-charts" className="space-y-3 pt-2">
           <Card className="w-full">
             <CardHeader className="pb-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex flex-col gap-3">
                 <div>
                   <CardTitle className="text-sm font-semibold text-foreground flex items-center gap-2">
                     <BarChart3 className="size-4" />
-                    Analyses Graphiques &amp; Validation Électrochimique
+                    {t.cyclers.chartsCardTitle}
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Examinez les courbes caractéristiques selon le mode d'essai sélectionné.
+                    {t.cyclers.chartsCardDesc}
                   </CardDescription>
                 </div>
 
@@ -100,18 +106,20 @@ export default function CyclersPage() {
                     value={selectedRegime}
                     onValueChange={(val) => setSelectedRegime(val as typeof selectedRegime)}
                   >
-                    <TabsList className="h-8">
-                      <TabsTrigger value="cc" className="text-xs px-2.5 cursor-pointer gap-1.5 font-mono">
-                        <Layers className="size-3.5" />
-                        Pseudo-OCV &amp; dQ/dV
+                    <TabsList className="h-8 w-full sm:w-auto">
+                      <TabsTrigger value="cc" className="text-xs px-2 sm:px-2.5 cursor-pointer gap-1 sm:gap-1.5 font-mono flex-1 sm:flex-none">
+                        <Layers className="size-3.5 shrink-0" />
+                        <span className="hidden xs:inline">Pseudo-OCV</span>
+                        <span className="xs:hidden">OCV</span>
+                        <span className="hidden sm:inline"> &amp; dQ/dV</span>
                       </TabsTrigger>
-                      <TabsTrigger value="gitt" className="text-xs px-2.5 cursor-pointer gap-1.5 font-mono">
-                        <Zap className="size-3.5" />
-                        Titration GITT 0.33C
+                      <TabsTrigger value="gitt" className="text-xs px-2 sm:px-2.5 cursor-pointer gap-1 sm:gap-1.5 font-mono flex-1 sm:flex-none">
+                        <Zap className="size-3.5 shrink-0" />
+                        <span className="hidden sm:inline">Titration </span>GITT
                       </TabsTrigger>
-                      <TabsTrigger value="drive" className="text-xs px-2.5 cursor-pointer gap-1.5 font-mono">
-                        <Activity className="size-3.5" />
-                        Profil VE Dynamique
+                      <TabsTrigger value="drive" className="text-xs px-2 sm:px-2.5 cursor-pointer gap-1 sm:gap-1.5 font-mono flex-1 sm:flex-none">
+                        <Activity className="size-3.5 shrink-0" />
+                        <span className="hidden sm:inline">Profil </span>VE
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
@@ -125,14 +133,14 @@ export default function CyclersPage() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div className="p-3 border border-border rounded-lg bg-card">
                       <div className="mb-2 text-xs font-mono font-medium text-foreground">
-                        Chronogramme V(t) &amp; I(t) — Cycle C/12 (24.5h)
+                        {t.cyclers.telemetryTitle}
                       </div>
                       <LfpTelemetryChart data={lfpData.telemetry} />
                     </div>
 
                     <div className="p-3 border border-border rounded-lg bg-card">
                       <div className="mb-2 text-xs font-mono font-medium text-foreground">
-                        Plateau de Tension Biphasique V(Q)
+                        {t.cyclers.vqPlateauTitle}
                       </div>
                       <LfpVQChart data={lfpData.vq_curves} />
                     </div>
@@ -140,7 +148,7 @@ export default function CyclersPage() {
 
                   <div className="p-3 border border-border rounded-lg bg-card">
                     <div className="mb-2 text-xs font-mono font-medium text-foreground">
-                      Dérivée Capacitive dQ/dV — Transition de Phase Redox à 3.42V
+                      {t.cyclers.dqdvTitle}
                     </div>
                     <LfpDQDVChart data={lfpData.dqdv_curve} />
                   </div>
@@ -151,7 +159,7 @@ export default function CyclersPage() {
               {selectedRegime === "gitt" && (
                 <div className="p-3 border border-border rounded-lg bg-card">
                   <div className="mb-2 text-xs font-mono font-medium text-foreground">
-                    Cinétique GITT (58 Impulsions sur 118.4 Heures &amp; Diffusion Li⁺)
+                    {t.cyclers.gittTitle}
                   </div>
                   <LfpGittChart
                     pulses={lfpData.gitt_pulses ?? []}
@@ -164,7 +172,7 @@ export default function CyclersPage() {
               {selectedRegime === "drive" && (
                 <div className="p-3 border border-border rounded-lg bg-card">
                   <div className="mb-2 text-xs font-mono font-medium text-foreground">
-                    Cycle Routier Dynamique VE (Profil 1 — 5.22h)
+                    {t.cyclers.driveTitle}
                   </div>
                   <LfpDriveProfileChart data={lfpData.drive_profile ?? []} />
                 </div>

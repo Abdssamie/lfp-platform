@@ -16,6 +16,7 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useWorkstation } from "@/contexts/workstation-context";
+import { usePlatformTranslation } from "@/lib/translations";
 
 const Command = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive>,
@@ -108,17 +109,18 @@ interface CommandSearchProps {
 
 export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
   const { setWorkspace, setDataset, setSelectedChannel } = useWorkstation();
+  const { t, isFr } = usePlatformTranslation();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="overflow-hidden p-0 shadow-xl border max-w-[560px]">
         <DialogTitle className="sr-only">Command Search</DialogTitle>
         <Command>
-          <CommandInput placeholder="Search workstation, channel, or metric..." autoFocus />
+          <CommandInput placeholder={t.search.placeholder} autoFocus />
           <CommandList>
-            <CommandEmpty>No matching battery telemetry found.</CommandEmpty>
+            <CommandEmpty>{t.search.emptyText}</CommandEmpty>
 
-            <CommandGroup heading="Workstations">
+            <CommandGroup heading={t.search.workstationsHeading}>
               <CommandItem
                 onSelect={() => {
                   setWorkspace("formation");
@@ -126,7 +128,11 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
                 }}
               >
                 <Cpu className="mr-2 h-4 w-4 text-primary" />
-                <span>Formation Line SPC (24-Channel Rack)</span>
+                <span>
+                  {isFr
+                    ? "Ligne de Formation SPC (Rack 24 canaux)"
+                    : "Formation Line SPC (24-Channel Rack)"}
+                </span>
               </CommandItem>
               <CommandItem
                 onSelect={() => {
@@ -135,7 +141,11 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
                 }}
               >
                 <LineChart className="mr-2 h-4 w-4 text-primary" />
-                <span>Cycler Lab Curves (Novonix & Neware)</span>
+                <span>
+                  {isFr
+                    ? "Courbes Cyclage Laboratoire (Novonix & Neware)"
+                    : "Cycler Lab Curves (Novonix & Neware)"}
+                </span>
               </CommandItem>
               <CommandItem
                 onSelect={() => {
@@ -144,11 +154,15 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
                 }}
               >
                 <Flame className="mr-2 h-4 w-4 text-primary" />
-                <span>BTMS Thermal Simulator (Bernardi ODE RK45)</span>
+                <span>
+                  {isFr
+                    ? "Simulateur Thermique BTMS (Bilan Bernardi ODE)"
+                    : "BTMS Thermal Simulator (Bernardi ODE RK45)"}
+                </span>
               </CommandItem>
             </CommandGroup>
 
-            <CommandGroup heading="Cycler Datasets">
+            <CommandGroup heading={t.search.cyclerDatasetsHeading}>
               <CommandItem
                 onSelect={() => {
                   setWorkspace("cyclers");
@@ -157,7 +171,11 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
                 }}
               >
                 <Layers className="mr-2 h-4 w-4 text-blue-500" />
-                <span>Novonix High-Precision Cycler (Cell #8001)</span>
+                <span>
+                  {isFr
+                    ? "Banc Novonix Haute Précision (Cellule #8001)"
+                    : "Novonix High-Precision Cycler (Cell #8001)"}
+                </span>
               </CommandItem>
               <CommandItem
                 onSelect={() => {
@@ -167,7 +185,11 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
                 }}
               >
                 <Layers className="mr-2 h-4 w-4 text-emerald-500" />
-                <span>Neware Multi-Rate Fast Charge (0.5C - 3C)</span>
+                <span>
+                  {isFr
+                    ? "Charge Rapide Multi-Régimes Neware (0.5C - 3C)"
+                    : "Neware Multi-Rate Fast Charge (0.5C - 3C)"}
+                </span>
               </CommandItem>
               <CommandItem
                 onSelect={() => {
@@ -177,11 +199,15 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
                 }}
               >
                 <Layers className="mr-2 h-4 w-4 text-purple-500" />
-                <span>Commercial Prismatic LFP 50Ah Dataset</span>
+                <span>
+                  {isFr
+                    ? "Données Cellule Prismatique LFP 50Ah"
+                    : "Commercial Prismatic LFP 50Ah Dataset"}
+                </span>
               </CommandItem>
             </CommandGroup>
 
-            <CommandGroup heading="Channel Inspection">
+            <CommandGroup heading={t.search.channelInspectionHeading}>
               {[1, 5, 8, 12, 14, 20].map((ch) => (
                 <CommandItem
                   key={ch}
@@ -192,12 +218,14 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
                   }}
                 >
                   <Hash className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-                  <span>Inspect Channel {ch} {ch === 14 ? "(Quarantined Scrap)" : "(Tested)"}</span>
+                  <span>
+                    {t.search.inspectChannel} {ch} {ch === 14 ? t.search.quarantinedScrap : t.search.tested}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>
 
-            <CommandGroup heading="IATF 16949 Standards">
+            <CommandGroup heading={t.search.iatfStandardsHeading}>
               <CommandItem
                 onSelect={() => {
                   setWorkspace("formation");
@@ -205,7 +233,11 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
                 }}
               >
                 <ShieldCheck className="mr-2 h-4 w-4 text-emerald-500" />
-                <span>K-value vs DCIR Screening Plot (Quadrant Boundary)</span>
+                <span>
+                  {isFr
+                    ? "Matrice de Tri K-value vs DCIR (Limites Quadrants)"
+                    : "K-value vs DCIR Screening Plot (Quadrant Boundary)"}
+                </span>
               </CommandItem>
               <CommandItem
                 onSelect={() => {
@@ -214,7 +246,11 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
                 }}
               >
                 <BarChart3 className="mr-2 h-4 w-4 text-primary" />
-                <span>Shewhart SPC Run Chart (X-bar / R Limits)</span>
+                <span>
+                  {isFr
+                    ? "Carte de Contrôle SPC Shewhart (Limites UCL / LCL)"
+                    : "Shewhart SPC Run Chart (X-bar / R Limits)"}
+                </span>
               </CommandItem>
             </CommandGroup>
           </CommandList>
@@ -225,14 +261,16 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
 }
 
 export function SearchTrigger({ onClick }: { onClick: () => void }) {
+  const { t } = usePlatformTranslation();
+
   return (
     <button
       onClick={onClick}
       className="inline-flex items-center gap-2 whitespace-nowrap rounded-md text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring border border-input bg-background shadow-xs hover:bg-accent hover:text-accent-foreground h-8 px-2.5 py-1 relative w-full justify-start text-muted-foreground cursor-pointer"
     >
       <Search className="mr-1.5 h-3.5 w-3.5" />
-      <span className="hidden sm:inline-flex">Search workstation, channel...</span>
-      <span className="inline-flex sm:hidden">Search...</span>
+      <span className="hidden sm:inline-flex">{t.common.searchPlaceholder}</span>
+      <span className="inline-flex sm:hidden">{t.common.searchMobile}</span>
       <kbd className="pointer-events-none absolute right-1.5 top-1.5 hidden h-4 select-none items-center gap-0.5 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
         <span className="text-[10px]">⌘</span>K
       </kbd>

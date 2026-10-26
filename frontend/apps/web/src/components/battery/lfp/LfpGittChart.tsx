@@ -12,6 +12,7 @@ import {
   Legend,
 } from "recharts";
 import type { LfpGittPoint, LfpGittCurvePoint } from "@/types/api";
+import { usePlatformTranslation } from "@/lib/translations";
 
 interface LfpGittChartProps {
   pulses: LfpGittPoint[];
@@ -27,9 +28,10 @@ interface CustomTooltipProps {
     payload: LfpGittPoint | LfpGittCurvePoint;
   }>;
   label?: number | string;
+  isFr?: boolean;
 }
 
-function GittPulseTooltip({ active, payload }: CustomTooltipProps) {
+function GittPulseTooltip({ active, payload, isFr }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0 || !payload[0]?.payload) return null;
   const p = payload[0].payload as LfpGittPoint;
 
@@ -37,21 +39,21 @@ function GittPulseTooltip({ active, payload }: CustomTooltipProps) {
     <div className="rounded-lg border border-border bg-popover/95 p-3 font-mono text-xs shadow-xl backdrop-blur-sm">
       <div className="flex items-center justify-between gap-6 pb-2 mb-2 border-b border-border/60">
         <span className="font-semibold text-foreground">
-          GITT Pulse #{p.pulse_index}
+          {isFr ? "Impulsion GITT n°" : "GITT Pulse #"}{p.pulse_index}
         </span>
         <span className="text-muted-foreground">SOC {(p.soc * 100).toFixed(1)}%</span>
       </div>
       <div className="grid grid-cols-2 gap-x-5 gap-y-1.5 text-xs">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">Relaxed OCV:</span>
+          <span className="text-muted-foreground">{isFr ? "OCV Relaxé :" : "Relaxed OCV:"}</span>
           <span className="font-bold text-foreground">{p.ocv_relaxed?.toFixed(4)} V</span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">Pulse End V:</span>
+          <span className="text-muted-foreground">{isFr ? "Fin Impulsion V :" : "Pulse End V:"}</span>
           <span className="font-medium text-muted-foreground">{p.voltage_pulse_end?.toFixed(4)} V</span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">Internal Resistance:</span>
+          <span className="text-muted-foreground">{isFr ? "Résistance Interne :" : "Internal Resistance:"}</span>
           <span className="font-semibold text-foreground">{p.r_internal_mohm?.toFixed(2)} mΩ</span>
         </div>
         <div className="flex items-center justify-between gap-2">
@@ -63,23 +65,25 @@ function GittPulseTooltip({ active, payload }: CustomTooltipProps) {
   );
 }
 
-function GittTimelineTooltip({ active, payload, label }: CustomTooltipProps) {
+function GittTimelineTooltip({ active, payload, label, isFr }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0 || !payload[0]?.payload) return null;
   const pt = payload[0].payload as LfpGittCurvePoint;
 
   return (
     <div className="rounded-lg border border-border bg-popover/95 p-3 font-mono text-xs shadow-xl backdrop-blur-sm">
       <div className="flex items-center justify-between gap-6 pb-2 mb-2 border-b border-border/60">
-        <span className="font-semibold text-foreground">GITT 0.33C Timeline</span>
-        <span className="text-muted-foreground">{Number(label).toFixed(2)} hours</span>
+        <span className="font-semibold text-foreground">
+          {isFr ? "Chronogramme GITT 0.33C" : "GITT 0.33C Timeline"}
+        </span>
+        <span className="text-muted-foreground">{Number(label).toFixed(2)} {isFr ? "heures" : "hours"}</span>
       </div>
       <div className="grid grid-cols-2 gap-x-5 gap-y-1.5 text-xs">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">Voltage:</span>
+          <span className="text-muted-foreground">{isFr ? "Tension :" : "Voltage:"}</span>
           <span className="font-bold text-foreground">{pt.voltage_v?.toFixed(4)} V</span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">Current:</span>
+          <span className="text-muted-foreground">{isFr ? "Courant :" : "Current:"}</span>
           <span className="font-semibold text-foreground">{pt.current_a?.toFixed(2)} A</span>
         </div>
         <div className="flex items-center justify-between gap-2">
@@ -92,12 +96,13 @@ function GittTimelineTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export function LfpGittChart({ pulses, timeline }: LfpGittChartProps) {
+  const { isFr } = usePlatformTranslation();
   const [activeTab, setActiveTab] = useState<"kinetics" | "timeline" | "resistance">("kinetics");
 
   if (!pulses || pulses.length === 0) {
     return (
-      <div className="flex h-96 items-center justify-center font-mono text-xs text-muted-foreground">
-        No GITT experimental data available.
+      <div className="flex h-56 sm:h-72 lg:h-96 items-center justify-center font-mono text-xs text-muted-foreground">
+        {isFr ? "Aucune donnée expérimentale GITT disponible." : "No GITT experimental data available."}
       </div>
     );
   }
@@ -110,7 +115,11 @@ export function LfpGittChart({ pulses, timeline }: LfpGittChartProps) {
       {/* Controls Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
         <span className="text-muted-foreground">
-          Protocole GITT 0.33C : <strong className="text-foreground font-semibold">118.4 Heures</strong> · 58 Échelons de Titration
+          {isFr ? (
+            <>Protocole GITT 0.33C : <strong className="text-foreground font-semibold">118.4 Heures</strong> · 58 Échelons de Titration</>
+          ) : (
+            <>GITT 0.33C Protocol: <strong className="text-foreground font-semibold">118.4 Hours</strong> · 58 Titration Steps</>
+          )}
         </span>
 
         <div className="flex items-center gap-1 bg-muted/50 rounded-md p-1 border border-border/60">
@@ -123,7 +132,7 @@ export function LfpGittChart({ pulses, timeline }: LfpGittChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Diffusion D_Li⁺ &amp; OCV
+            {isFr ? "Diffusion D_Li⁺ & OCV" : "D_Li+ Diffusion & OCV"}
           </button>
           <button
             type="button"
@@ -134,7 +143,7 @@ export function LfpGittChart({ pulses, timeline }: LfpGittChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Résistance DCIR (mΩ)
+            {isFr ? "Résistance DCIR (mΩ)" : "DCIR Resistance (mΩ)"}
           </button>
           <button
             type="button"
@@ -145,14 +154,14 @@ export function LfpGittChart({ pulses, timeline }: LfpGittChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Chronogramme V(t) 118h
+            {isFr ? "Chronogramme V(t) 118h" : "Timeline V(t) 118h"}
           </button>
         </div>
       </div>
 
       {/* Mode 1: Solid-State Diffusion & Equilibrium OCV vs SOC */}
       {activeTab === "kinetics" && (
-        <div className="w-full h-96 min-w-0">
+        <div className="w-full h-56 sm:h-72 lg:h-96 min-w-0">
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <LineChart data={sortedPulses} margin={{ top: 16, right: 32, left: 8, bottom: 12 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
@@ -232,7 +241,7 @@ export function LfpGittChart({ pulses, timeline }: LfpGittChartProps) {
 
       {/* Mode 2: DCIR Internal Resistance across SOC */}
       {activeTab === "resistance" && (
-        <div className="w-full h-96 min-w-0">
+        <div className="w-full h-56 sm:h-72 lg:h-96 min-w-0">
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <LineChart data={sortedPulses} margin={{ top: 16, right: 32, left: 8, bottom: 12 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
@@ -277,7 +286,7 @@ export function LfpGittChart({ pulses, timeline }: LfpGittChartProps) {
 
       {/* Mode 3: Continuous 118h GITT Timeline */}
       {activeTab === "timeline" && (
-        <div className="w-full h-96 min-w-0">
+        <div className="w-full h-56 sm:h-72 lg:h-96 min-w-0">
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <LineChart data={timeline} margin={{ top: 16, right: 32, left: 8, bottom: 12 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />

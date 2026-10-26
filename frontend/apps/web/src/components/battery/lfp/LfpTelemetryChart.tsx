@@ -12,6 +12,7 @@ import {
   Legend,
 } from "recharts";
 import type { LfpTelemetryPoint } from "@/types/api";
+import { usePlatformTranslation } from "@/lib/translations";
 
 interface LfpTelemetryChartProps {
   data: LfpTelemetryPoint[];
@@ -26,9 +27,10 @@ interface CustomTooltipProps {
     payload: LfpTelemetryPoint;
   }>;
   label?: number;
+  isFr?: boolean;
 }
 
-function TelemetryTooltip({ active, payload, label }: CustomTooltipProps) {
+function TelemetryTooltip({ active, payload, label, isFr }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0 || !payload[0]?.payload) return null;
   const point = payload[0].payload;
 
@@ -38,23 +40,23 @@ function TelemetryTooltip({ active, payload, label }: CustomTooltipProps) {
         <span className="font-semibold text-foreground">
           {point.step_type || "Cycle"} ({point.c_rate || "C/12"})
         </span>
-        <span className="text-muted-foreground">{Number(label).toFixed(2)} hours</span>
+        <span className="text-muted-foreground">{Number(label).toFixed(2)} {isFr ? "heures" : "hours"}</span>
       </div>
       <div className="grid grid-cols-2 gap-x-5 gap-y-1.5 text-xs">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">Voltage:</span>
+          <span className="text-muted-foreground">{isFr ? "Tension :" : "Voltage:"}</span>
           <span className="font-bold text-primary">
             {typeof point.voltage_v === "number" ? `${point.voltage_v.toFixed(4)} V` : "—"}
           </span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">Current:</span>
+          <span className="text-muted-foreground">{isFr ? "Courant :" : "Current:"}</span>
           <span className="font-semibold text-foreground">
             {typeof point.current_a === "number" ? `${point.current_a.toFixed(2)} A` : "—"}
           </span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">Capacity:</span>
+          <span className="text-muted-foreground">{isFr ? "Capacité :" : "Capacity:"}</span>
           <span className="font-medium text-foreground">
             {typeof point.capacity_ah === "number" ? `${point.capacity_ah.toFixed(2)} Ah` : "—"}
           </span>
@@ -70,14 +72,14 @@ function TelemetryTooltip({ active, payload, label }: CustomTooltipProps) {
   );
 }
 
-
 export function LfpTelemetryChart({ data }: LfpTelemetryChartProps) {
+  const { isFr } = usePlatformTranslation();
   const [viewMode, setViewMode] = useState<"both" | "voltage" | "current">("both");
 
   if (data.length === 0) {
     return (
-      <div className="flex h-96 items-center justify-center font-mono text-xs text-muted-foreground">
-        No telemetry data available.
+      <div className="flex h-56 sm:h-72 lg:h-96 items-center justify-center font-mono text-xs text-muted-foreground">
+        {isFr ? "Aucune donnée de télémétrie disponible." : "No telemetry data available."}
       </div>
     );
   }
@@ -87,7 +89,11 @@ export function LfpTelemetryChart({ data }: LfpTelemetryChartProps) {
       {/* Controls Header */}
       <div className="flex items-center justify-between text-xs font-mono">
         <span className="text-muted-foreground">
-          C/12 Full Cycle: <strong className="text-foreground font-semibold">24.5 Hours</strong> (50.0 Ah Delivered)
+          {isFr ? (
+            <>Cycle C/12 complet : <strong className="text-foreground font-semibold">24.5 Heures</strong> (50.0 Ah délivrés)</>
+          ) : (
+            <>C/12 Full Cycle: <strong className="text-foreground font-semibold">24.5 Hours</strong> (50.0 Ah Delivered)</>
+          )}
         </span>
 
         <div className="flex items-center gap-1 bg-muted/50 rounded-md p-1 border border-border/60">
@@ -100,7 +106,7 @@ export function LfpTelemetryChart({ data }: LfpTelemetryChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Voltage &amp; Current
+            {isFr ? "Tension & Courant" : "Voltage & Current"}
           </button>
           <button
             type="button"
@@ -111,7 +117,7 @@ export function LfpTelemetryChart({ data }: LfpTelemetryChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Voltage Only
+            {isFr ? "Tension" : "Voltage"}
           </button>
           <button
             type="button"
@@ -122,13 +128,13 @@ export function LfpTelemetryChart({ data }: LfpTelemetryChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Current Only
+            {isFr ? "Courant" : "Current"}
           </button>
         </div>
       </div>
 
       {/* Chart */}
-      <div className="w-full h-96 min-w-0">
+      <div className="w-full h-56 sm:h-72 lg:h-96 min-w-0">
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <LineChart data={data} margin={{ top: 16, right: 32, left: 8, bottom: 12 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
@@ -163,7 +169,7 @@ export function LfpTelemetryChart({ data }: LfpTelemetryChartProps) {
                 width={42}
               />
             )}
-            <Tooltip content={<TelemetryTooltip />} />
+            <Tooltip content={<TelemetryTooltip isFr={isFr} />} />
             <Legend
               verticalAlign="top"
               align="right"
@@ -178,7 +184,7 @@ export function LfpTelemetryChart({ data }: LfpTelemetryChartProps) {
                 yAxisId="voltage"
                 type="monotone"
                 dataKey="voltage_v"
-                name="Potential (V)"
+                name={isFr ? "Tension (V)" : "Potential (V)"}
                 stroke="#10b981"
                 strokeWidth={2.2}
                 dot={false}
@@ -190,7 +196,7 @@ export function LfpTelemetryChart({ data }: LfpTelemetryChartProps) {
                 yAxisId="current"
                 type="stepAfter"
                 dataKey="current_a"
-                name="Current (A)"
+                name={isFr ? "Courant (A)" : "Current (A)"}
                 stroke="var(--muted-foreground)"
                 strokeWidth={1.2}
                 strokeDasharray="4 2"

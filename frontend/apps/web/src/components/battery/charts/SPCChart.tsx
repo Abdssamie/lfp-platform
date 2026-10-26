@@ -12,24 +12,27 @@ import {
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import type { ChartConfig } from "@/components/ui/chart";
 import type { SPCSummaryResponse } from "@/types/api";
+import { usePlatformTranslation } from "@/lib/translations";
 
 interface SPCChartProps {
   summary: SPCSummaryResponse | null;
   onSelectCell?: (cellId: string) => void;
 }
 
-const chartConfig = {
-  capacity_ah: {
-    label: "Capacité Déchargée (Ah)",
-    color: "#38bdf8",
-  },
-} satisfies ChartConfig;
-
 export function SPCChart({ summary }: SPCChartProps) {
+  const { t, isFr } = usePlatformTranslation();
+
+  const dynamicChartConfig = {
+    capacity_ah: {
+      label: t.formation.spcCapacityAxisLabel,
+      color: "#38bdf8",
+    },
+  } satisfies ChartConfig;
+
   if (!summary || summary.data_points.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center font-mono text-xs text-muted-foreground">
-        Aucune série temporelle SPC calculée.
+        {isFr ? "Aucune série temporelle SPC calculée." : "No SPC time-series data calculated."}
       </div>
     );
   }
@@ -45,7 +48,7 @@ export function SPCChart({ summary }: SPCChartProps) {
   };
 
   return (
-    <ChartContainer config={chartConfig} className="h-76 w-full">
+    <ChartContainer config={dynamicChartConfig} className="h-56 sm:h-72 lg:h-76 w-full">
       <LineChart data={data_points} margin={{ top: 20, right: 75, left: 4, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.18)" />
 
@@ -56,7 +59,7 @@ export function SPCChart({ summary }: SPCChartProps) {
           axisLine={{ stroke: "rgba(148, 163, 184, 0.3)" }}
           tickLine={{ stroke: "rgba(148, 163, 184, 0.3)" }}
           label={{
-            value: "Canal de Formation",
+            value: t.formation.spcChannelAxisLabel,
             position: "insideBottom",
             offset: -12,
             fill: "#e2e8f0",
@@ -73,7 +76,7 @@ export function SPCChart({ summary }: SPCChartProps) {
           tickLine={{ stroke: "rgba(148, 163, 184, 0.3)" }}
           width={54}
           label={{
-            value: "Capacité Réelle (Ah)",
+            value: t.formation.spcCapacityAxisLabel,
             angle: -90,
             position: "insideLeft",
             offset: 14,
@@ -130,7 +133,7 @@ export function SPCChart({ summary }: SPCChartProps) {
         <Line
           type="monotone"
           dataKey="capacity_ah"
-          name="Capacité (Ah)"
+          name={t.formation.spcCapacityAxisLabel}
           stroke="#f8fafc"
           strokeWidth={2}
           dot={{ r: 4, fill: "#38bdf8", stroke: "#0f172a", strokeWidth: 1.5 }}

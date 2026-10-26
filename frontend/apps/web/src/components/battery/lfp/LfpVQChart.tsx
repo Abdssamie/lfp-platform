@@ -13,6 +13,7 @@ import {
   ReferenceArea,
 } from "recharts";
 import type { LfpVQPoint } from "@/types/api";
+import { usePlatformTranslation } from "@/lib/translations";
 
 interface LfpVQChartProps {
   data: LfpVQPoint[];
@@ -33,9 +34,10 @@ interface CustomTooltipProps {
     payload: MergedVQPoint;
   }>;
   label?: number | string;
+  isFr?: boolean;
 }
 
-function VQTooltip({ active, payload, label }: CustomTooltipProps) {
+function VQTooltip({ active, payload, label, isFr }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   const point = payload[0]?.payload;
@@ -46,7 +48,9 @@ function VQTooltip({ active, payload, label }: CustomTooltipProps) {
   return (
     <div className="rounded-lg border border-border bg-popover/95 p-3 font-mono text-xs shadow-xl backdrop-blur-sm min-w-52">
       <div className="flex items-center justify-between gap-6 pb-2 mb-2 border-b border-border/60">
-        <span className="font-semibold text-foreground">LiFePO4 Potential</span>
+        <span className="font-semibold text-foreground">
+          {isFr ? "Potentiel LiFePO₄" : "LiFePO4 Potential"}
+        </span>
         <span className="text-muted-foreground">{Number(label).toFixed(2)} Ah</span>
       </div>
       <div className="flex flex-col gap-1.5 text-xs">
@@ -66,7 +70,9 @@ function VQTooltip({ active, payload, label }: CustomTooltipProps) {
         ))}
         {deltaV !== null && (
           <div className="flex items-center justify-between gap-4 pt-1.5 mt-1 border-t border-border/40 text-[11px]">
-            <span className="text-muted-foreground">Overpotential (ΔV):</span>
+            <span className="text-muted-foreground">
+              {isFr ? "Surtension (ΔV) :" : "Overpotential (ΔV):"}
+            </span>
             <span className="font-semibold text-foreground font-mono">
               {deltaV.toFixed(1)} mV
             </span>
@@ -78,6 +84,7 @@ function VQTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export function LfpVQChart({ data }: LfpVQChartProps) {
+  const { isFr } = usePlatformTranslation();
   const [activeCycle, setActiveCycle] = useState<"c12" | "c6">("c12");
 
   const selectedRate = activeCycle === "c12" ? "C/12" : "C/6";
@@ -86,10 +93,18 @@ export function LfpVQChart({ data }: LfpVQChartProps) {
     if (!data || data.length === 0) return [];
 
     const chgPoints = data
-      .filter((p) => p.rate_label.includes(selectedRate) && p.step_type === "Charge")
+      .filter(
+        (p) =>
+          p.rate_label.includes(selectedRate) &&
+          (p.step_type === "Charge" || p.step_type.toLowerCase().includes("chg"))
+      )
       .sort((a, b) => a.capacity_ah - b.capacity_ah);
     const dchgPoints = data
-      .filter((p) => p.rate_label.includes(selectedRate) && p.step_type === "Discharge")
+      .filter(
+        (p) =>
+          p.rate_label.includes(selectedRate) &&
+          (p.step_type === "Discharge" || p.step_type.toLowerCase().includes("dchg"))
+      )
       .sort((a, b) => a.capacity_ah - b.capacity_ah);
 
     if (chgPoints.length === 0 && dchgPoints.length === 0) return [];
@@ -130,7 +145,7 @@ export function LfpVQChart({ data }: LfpVQChartProps) {
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex h-96 items-center justify-center font-mono text-xs text-muted-foreground">
+      <div className="flex h-56 sm:h-72 lg:h-96 items-center justify-center font-mono text-xs text-muted-foreground">
         No V-Q curve data available.
       </div>
     );
@@ -141,7 +156,9 @@ export function LfpVQChart({ data }: LfpVQChartProps) {
       {/* Controls Header */}
       <div className="flex items-center justify-between text-xs font-mono">
         <span className="text-muted-foreground">
-          Flat Plateau Characteristic of LFP (FePO4 ↔ LiFePO4 Two-Phase Transition)
+          {isFr
+            ? "Plateau Plat Caractéristique LFP (Transition Biphasique FePO₄ ↔ LiFePO₄)"
+            : "Flat Plateau Characteristic of LFP (FePO4 ↔ LiFePO4 Two-Phase Transition)"}
         </span>
 
         <div className="flex items-center gap-1 bg-muted/50 rounded-md p-1 border border-border/60">
@@ -154,7 +171,7 @@ export function LfpVQChart({ data }: LfpVQChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            C/12 Cycle (4.08A)
+            {isFr ? "Cycle C/12 (4.08A)" : "C/12 Cycle (4.08A)"}
           </button>
           <button
             type="button"
@@ -165,13 +182,13 @@ export function LfpVQChart({ data }: LfpVQChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            C/6 Cycle (8.17A)
+            {isFr ? "Cycle C/6 (8.17A)" : "C/6 Cycle (8.17A)"}
           </button>
         </div>
       </div>
 
       {/* Spacious Chart Area */}
-      <div className="w-full h-96 min-w-0">
+      <div className="w-full h-56 sm:h-72 lg:h-96 min-w-0">
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <LineChart data={chartData} margin={{ top: 16, right: 32, left: 8, bottom: 12 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
@@ -191,7 +208,7 @@ export function LfpVQChart({ data }: LfpVQChartProps) {
               tickLine={false}
               width={52}
             />
-            <Tooltip content={<VQTooltip />} />
+            <Tooltip content={<VQTooltip isFr={isFr} />} />
             <Legend
               verticalAlign="top"
               align="right"
@@ -220,7 +237,7 @@ export function LfpVQChart({ data }: LfpVQChartProps) {
             <Line
               type="monotone"
               dataKey="v_discharge"
-              name={`${selectedRate} Discharge`}
+              name={`${selectedRate} ${isFr ? "Décharge" : "Discharge"}`}
               stroke="#06b6d4"
               strokeWidth={2.4}
               dot={false}

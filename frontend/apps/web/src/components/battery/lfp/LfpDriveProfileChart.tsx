@@ -12,6 +12,7 @@ import {
   Legend,
 } from "recharts";
 import type { LfpDriveProfilePoint } from "@/types/api";
+import { usePlatformTranslation } from "@/lib/translations";
 
 interface LfpDriveProfileChartProps {
   data: LfpDriveProfilePoint[];
@@ -26,9 +27,10 @@ interface CustomTooltipProps {
     payload: LfpDriveProfilePoint;
   }>;
   label?: number;
+  isFr?: boolean;
 }
 
-function DriveTooltip({ active, payload, label }: CustomTooltipProps) {
+function DriveTooltip({ active, payload, label, isFr }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0 || !payload[0]?.payload) return null;
   const p = payload[0].payload;
 
@@ -36,21 +38,21 @@ function DriveTooltip({ active, payload, label }: CustomTooltipProps) {
     <div className="rounded-lg border border-border bg-popover/95 p-3 font-mono text-xs shadow-xl backdrop-blur-sm">
       <div className="flex items-center justify-between gap-6 pb-2 mb-2 border-b border-border/60">
         <span className="font-semibold text-foreground">
-          Profil Dynamique VE (US06/WLTP)
+          {isFr ? "Profil Dynamique VE (US06/WLTP)" : "Dynamic EV Profile (US06/WLTP)"}
         </span>
-        <span className="text-muted-foreground">{Number(label).toFixed(2)} hours</span>
+        <span className="text-muted-foreground">{Number(label).toFixed(2)} {isFr ? "heures" : "hours"}</span>
       </div>
       <div className="grid grid-cols-2 gap-x-5 gap-y-1.5 text-xs">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">Voltage:</span>
+          <span className="text-muted-foreground">{isFr ? "Tension :" : "Voltage:"}</span>
           <span className="font-bold text-foreground">{p.voltage_v?.toFixed(4)} V</span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">Current:</span>
+          <span className="text-muted-foreground">{isFr ? "Courant :" : "Current:"}</span>
           <span className="font-semibold text-foreground">{p.current_a?.toFixed(2)} A</span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-muted-foreground">Net Capacity:</span>
+          <span className="text-muted-foreground">{isFr ? "Capacité Nette :" : "Net Capacity:"}</span>
           <span className="font-medium text-foreground">{p.net_ah?.toFixed(2)} Ah</span>
         </div>
         <div className="flex items-center justify-between gap-2">
@@ -63,12 +65,13 @@ function DriveTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export function LfpDriveProfileChart({ data }: LfpDriveProfileChartProps) {
+  const { isFr } = usePlatformTranslation();
   const [viewMode, setViewMode] = useState<"both" | "current" | "voltage">("both");
 
   if (!data || data.length === 0) {
     return (
-      <div className="flex h-96 items-center justify-center font-mono text-xs text-muted-foreground">
-        No EV drive cycle data available.
+      <div className="flex h-56 sm:h-72 lg:h-96 items-center justify-center font-mono text-xs text-muted-foreground">
+        {isFr ? "Aucune donnée de cycle routier VE disponible." : "No EV drive cycle data available."}
       </div>
     );
   }
@@ -78,7 +81,11 @@ export function LfpDriveProfileChart({ data }: LfpDriveProfileChartProps) {
       {/* Controls Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
         <span className="text-muted-foreground">
-          Cycle Routier VE Réel : <strong className="text-foreground font-semibold">5.22 Heures</strong> · Pic Décharge +47.2A · Récupération -25.3A
+          {isFr ? (
+            <>Cycle Routier VE Réel : <strong className="text-foreground font-semibold">5.22 Heures</strong> · Pic Décharge +47.2A · Récupération -25.3A</>
+          ) : (
+            <>Real-world EV Drive Cycle: <strong className="text-foreground font-semibold">5.22 Hours</strong> · Peak Discharge +47.2A · Regen -25.3A</>
+          )}
         </span>
 
         <div className="flex items-center gap-1 bg-muted/50 rounded-md p-1 border border-border/60">
@@ -91,7 +98,7 @@ export function LfpDriveProfileChart({ data }: LfpDriveProfileChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Tension &amp; Courant
+            {isFr ? "Tension & Courant" : "Voltage & Current"}
           </button>
           <button
             type="button"
@@ -102,7 +109,7 @@ export function LfpDriveProfileChart({ data }: LfpDriveProfileChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Courant Transitoire I(t)
+            {isFr ? "Courant" : "Current"}
           </button>
           <button
             type="button"
@@ -113,13 +120,13 @@ export function LfpDriveProfileChart({ data }: LfpDriveProfileChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Réponse en Tension V(t)
+            {isFr ? "Tension" : "Voltage"}
           </button>
         </div>
       </div>
 
       {/* Chart */}
-      <div className="w-full h-96 min-w-0">
+      <div className="w-full h-56 sm:h-72 lg:h-96 min-w-0">
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <LineChart data={data} margin={{ top: 16, right: 32, left: 8, bottom: 12 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" strokeOpacity={0.5} />
@@ -154,7 +161,7 @@ export function LfpDriveProfileChart({ data }: LfpDriveProfileChartProps) {
                 width={48}
               />
             )}
-            <Tooltip content={<DriveTooltip />} />
+            <Tooltip content={<DriveTooltip isFr={isFr} />} />
             <Legend
               verticalAlign="top"
               align="right"
@@ -169,7 +176,7 @@ export function LfpDriveProfileChart({ data }: LfpDriveProfileChartProps) {
                 yAxisId="voltage"
                 type="monotone"
                 dataKey="voltage_v"
-                name="Tension Cellule V(t)"
+                name={isFr ? "Tension Cellule V(t)" : "Cell Voltage V(t)"}
                 stroke="#38bdf8"
                 strokeWidth={1.8}
                 dot={false}
@@ -181,7 +188,7 @@ export function LfpDriveProfileChart({ data }: LfpDriveProfileChartProps) {
                 yAxisId="current"
                 type="monotone"
                 dataKey="current_a"
-                name="Courant Transitoire I(t)"
+                name={isFr ? "Courant Transitoire I(t)" : "Transient Current I(t)"}
                 stroke="#f97316"
                 strokeWidth={1.2}
                 dot={false}

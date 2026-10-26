@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import type { CellEvaluation } from "@/types/api";
 import { cn } from "@/lib/utils";
+import { usePlatformTranslation, localizeFailureReason, localizeGrade } from "@/lib/translations";
 
 interface BatchLedgerProps {
   evaluations: CellEvaluation[];
@@ -32,6 +33,7 @@ export function BatchLedger({
   selectedCellId,
   onSelectCell,
 }: BatchLedgerProps) {
+  const { isFr, t } = usePlatformTranslation();
   const [filterGrade, setFilterGrade] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [expandedCellId, setExpandedCellId] = useState<string | null>(null);
@@ -59,44 +61,44 @@ export function BatchLedger({
   return (
     <div className="flex flex-col gap-2 w-full">
       {/* Sleek, Non-Cluttered Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 p-1.5 rounded-lg border border-border bg-card">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-1.5 rounded-lg border border-border bg-card">
         {/* Subtle Filter Segment */}
-        <div className="flex items-center gap-1 font-mono text-xs">
+        <div className="flex flex-wrap items-center gap-1 font-mono text-xs">
           <Button
             type="button"
             size="sm"
             variant={filterGrade === "ALL" ? "secondary" : "ghost"}
             onClick={() => setFilterGrade("ALL")}
-            className="h-7 text-xs px-2.5 font-mono cursor-pointer"
+            className="h-7 text-xs px-2 sm:px-2.5 font-mono cursor-pointer"
           >
-            Tous ({evaluations.length})
+            {t.common.all} ({evaluations.length})
           </Button>
           <Button
             type="button"
             size="sm"
             variant={filterGrade === "Grade A" ? "secondary" : "ghost"}
             onClick={() => setFilterGrade("Grade A")}
-            className="h-7 text-xs px-2.5 font-mono cursor-pointer"
+            className="h-7 text-xs px-2 sm:px-2.5 font-mono cursor-pointer"
           >
-            Grade A ({gradeACount})
+            {t.common.gradeA} ({gradeACount})
           </Button>
           <Button
             type="button"
             size="sm"
             variant={filterGrade === "Grade B" ? "secondary" : "ghost"}
             onClick={() => setFilterGrade("Grade B")}
-            className="h-7 text-xs px-2.5 font-mono cursor-pointer"
+            className="h-7 text-xs px-2 sm:px-2.5 font-mono cursor-pointer"
           >
-            Grade B ({gradeBCount})
+            {t.common.gradeB} ({gradeBCount})
           </Button>
           <Button
             type="button"
             size="sm"
             variant={filterGrade === "Scrap" ? "secondary" : "ghost"}
             onClick={() => setFilterGrade("Scrap")}
-            className="h-7 text-xs px-2.5 font-mono cursor-pointer text-destructive"
+            className="h-7 text-xs px-2 sm:px-2.5 font-mono cursor-pointer text-destructive"
           >
-            Rebut ({scrapCount})
+            {t.common.scrap} ({scrapCount})
           </Button>
         </div>
 
@@ -105,8 +107,8 @@ export function BatchLedger({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Filtrer cellule ou canal..."
-          className="h-7 w-48 text-xs font-mono px-2"
+          placeholder={t.formation.filterPlaceholder}
+          className="h-7 w-full sm:w-44 text-xs font-mono px-2 sm:ml-auto"
         />
       </div>
 
@@ -116,15 +118,15 @@ export function BatchLedger({
           <TableHeader>
             <TableRow className="border-b border-border bg-muted/30">
               <TableHead className="w-8 py-2 px-2 text-center">
-                <span className="sr-only">Déplier</span>
+                <span className="sr-only">Toggle</span>
               </TableHead>
-              <TableHead className="w-14 font-mono text-xs py-2">Canal</TableHead>
-              <TableHead className="font-mono text-xs py-2">Identifiant Série</TableHead>
-              <TableHead className="font-mono text-xs py-2 text-right">Capacité</TableHead>
-              <TableHead className="font-mono text-xs py-2 text-right">DCIR (10s)</TableHead>
-              <TableHead className="font-mono text-xs py-2 text-right">K-Value</TableHead>
-              <TableHead className="font-mono text-xs py-2">Tri IATF</TableHead>
-              <TableHead className="font-mono text-xs py-2">Conformité</TableHead>
+              <TableHead className="w-14 font-mono text-xs py-2">{t.formation.channel}</TableHead>
+              <TableHead className="font-mono text-xs py-2 hidden md:table-cell">{t.formation.serialId}</TableHead>
+              <TableHead className="font-mono text-xs py-2 text-right">{t.formation.capacity}</TableHead>
+              <TableHead className="font-mono text-xs py-2 text-right hidden sm:table-cell">{t.formation.dcir}</TableHead>
+              <TableHead className="font-mono text-xs py-2 text-right hidden sm:table-cell">{t.formation.kValue}</TableHead>
+              <TableHead className="font-mono text-xs py-2">{t.formation.iatfSorting}</TableHead>
+              <TableHead className="font-mono text-xs py-2">{t.formation.compliance}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -134,7 +136,7 @@ export function BatchLedger({
                   colSpan={8}
                   className="h-20 text-center font-mono text-xs text-muted-foreground"
                 >
-                  Aucune cellule ne correspond aux critères.
+                  {t.formation.noCellsFound}
                 </TableCell>
               </TableRow>
             ) : (
@@ -169,7 +171,7 @@ export function BatchLedger({
                       <TableCell className="font-semibold text-foreground py-2">
                         CH{cell.channel_id.toString().padStart(2, "0")}
                       </TableCell>
-                      <TableCell className="text-muted-foreground py-2 font-mono">
+                      <TableCell className="text-muted-foreground py-2 font-mono hidden md:table-cell">
                         {cell.cell_id}
                       </TableCell>
                       <TableCell className="py-2 text-right font-bold text-foreground">
@@ -177,7 +179,7 @@ export function BatchLedger({
                       </TableCell>
                       <TableCell
                         className={cn(
-                          "py-2 text-right font-mono",
+                          "py-2 text-right font-mono hidden sm:table-cell",
                           hasDcirAlert ? "text-destructive font-bold" : "text-foreground"
                         )}
                       >
@@ -185,7 +187,7 @@ export function BatchLedger({
                       </TableCell>
                       <TableCell
                         className={cn(
-                          "py-2 text-right font-mono",
+                          "py-2 text-right font-mono hidden sm:table-cell",
                           isHazard ? "text-destructive font-bold" : "text-foreground"
                         )}
                       >
@@ -203,19 +205,19 @@ export function BatchLedger({
                               : "border-border text-muted-foreground"
                           )}
                         >
-                          {cell.grade}
+                          {localizeGrade(cell.grade, isFr)}
                         </Badge>
                       </TableCell>
                       <TableCell className="py-2 text-muted-foreground text-[11px]">
                         {cell.failure_reasons.length > 0 ? (
                           <span className="text-destructive font-medium flex items-center gap-1">
                             <AlertTriangle className="size-3 shrink-0" />
-                            {cell.failure_reasons.join(", ")}
+                            {cell.failure_reasons.map((r) => localizeFailureReason(r, isFr)).join(", ")}
                           </span>
                         ) : (
                           <span className="flex items-center gap-1 text-muted-foreground">
                             <CheckCircle2 className="size-3 shrink-0 text-foreground" />
-                            Conforme
+                            {t.common.compliant}
                           </span>
                         )}
                       </TableCell>
@@ -230,14 +232,14 @@ export function BatchLedger({
                               {/* 1. Rétention Lot */}
                               <div className="space-y-1">
                                 <span className="text-xs font-medium text-muted-foreground block">
-                                  Rétention Lot
+                                  {t.formation.batchRetention}
                                 </span>
                                 <div className="flex items-baseline gap-2">
                                   <span className="text-base font-bold text-foreground font-mono">
                                     {cell.capacity_retention_pct.toFixed(2)}%
                                   </span>
                                   <span className="text-xs text-muted-foreground font-normal">
-                                    (&gt; 98.0% spéc)
+                                    {t.formation.specTarget}
                                   </span>
                                 </div>
                               </div>
@@ -245,14 +247,14 @@ export function BatchLedger({
                               {/* 2. Rendement Coulombien */}
                               <div className="space-y-1">
                                 <span className="text-xs font-medium text-muted-foreground block">
-                                  Rendement Coulombien
+                                  {t.formation.coulombicEfficiency}
                                 </span>
                                 <div className="flex items-baseline gap-2">
                                   <span className="text-base font-bold text-foreground font-mono">
                                     {cell.coulombic_efficiency_pct.toFixed(2)}%
                                   </span>
                                   <span className="text-xs text-muted-foreground font-normal">
-                                    (cycle formation)
+                                    {t.formation.formationCycle}
                                   </span>
                                 </div>
                               </div>
@@ -260,7 +262,7 @@ export function BatchLedger({
                               {/* 3. Pic Redox dQ/dV */}
                               <div className="space-y-1">
                                 <span className="text-xs font-medium text-muted-foreground block">
-                                  Pic Redox dQ/dV
+                                  {t.formation.redoxPeak}
                                 </span>
                                 <div className="flex items-baseline gap-2">
                                   <span className="text-base font-bold text-foreground font-mono">
@@ -275,7 +277,7 @@ export function BatchLedger({
                               {/* 4. Affectation Ligne */}
                               <div className="space-y-1">
                                 <span className="text-xs font-medium text-muted-foreground block">
-                                  Affectation Ligne
+                                  {t.formation.lineAssignment}
                                 </span>
                                 <div className="pt-0.5">
                                   <Badge
@@ -290,10 +292,10 @@ export function BatchLedger({
                                     )}
                                   >
                                     {cell.grade === "Grade A"
-                                      ? "Pack Véhicule Électrique (EV)"
+                                      ? t.formation.evPack
                                       : cell.grade === "Grade B"
-                                      ? "Stockage Réseau (BESS)"
-                                      : "Rebut / Isolation Sécurité"}
+                                      ? t.formation.bessGrid
+                                      : t.formation.scrapQuarantine}
                                   </Badge>
                                 </div>
                               </div>
@@ -303,8 +305,8 @@ export function BatchLedger({
                             {cell.failure_reasons.length > 0 && (
                               <div className="pt-2.5 border-t border-destructive/20 text-destructive text-xs flex items-center gap-2">
                                 <AlertTriangle className="size-4 shrink-0" />
-                                <span className="font-semibold">Motif de rejet :</span>
-                                <span>{cell.failure_reasons.join(" · ")}</span>
+                                <span className="font-semibold">{t.formation.rejectionReason}</span>
+                                <span>{cell.failure_reasons.map((r) => localizeFailureReason(r, isFr)).join(" · ")}</span>
                               </div>
                             )}
                           </div>

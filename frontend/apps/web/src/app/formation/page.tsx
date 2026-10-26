@@ -17,8 +17,10 @@ import {
 import { MOCK_BATCH, MOCK_SCREENING, MOCK_SPC } from "@/lib/mock-data";
 import { fetchBatchCurrent, fetchScreeningScatter, fetchSPCSummary } from "@/lib/api";
 import type { BatchSummaryResponse, ScreeningScatterResponse, SPCSummaryResponse } from "@/types/api";
+import { usePlatformTranslation } from "@/lib/translations";
 
 export default function FormationPage() {
+  const { t } = usePlatformTranslation();
   const { selectedChannel, setSelectedChannel, refreshTrigger } = useWorkstation();
 
   const [batchData, setBatchData] = React.useState<BatchSummaryResponse>(MOCK_BATCH);
@@ -56,8 +58,8 @@ export default function FormationPage() {
     }
   }, [refreshTrigger]);
 
-  const pageTitle = "Ligne de Formation LFP — Contrôle Qualité & SPC";
-  const pageDesc = "Qualification Métrologique (24 Canaux) · Tri Automatisé IATF 16949 · Capabilité Six-Sigma (Cpk = 1.42)";
+  const pageTitle = t.formation.pageTitle;
+  const pageDesc = t.formation.pageDesc;
 
   return (
     <BaseLayout title={pageTitle} description={pageDesc}>
@@ -67,20 +69,20 @@ export default function FormationPage() {
           data-tour="formation-kpis"
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1 border-b border-border/60"
         >
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="font-mono text-muted-foreground">Lot Pilote:</span>
+          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+            <span className="font-mono text-muted-foreground">{t.formation.pilotBatch}</span>
             <Badge variant="outline" className="font-mono text-xs">
-              24 Cellules LFP 50Ah
+              {t.formation.pilotBatchValue}
             </Badge>
             <Badge variant="outline" className="font-mono text-xs">
-              Repos 14j @ 25°C
+              {t.formation.restCondition}
             </Badge>
             <Badge variant="outline" className="font-mono text-xs gap-1">
               <CheckCircle2 className="size-3" />
-              Rendement: {batchData.yield_pct.toFixed(1)}% ({batchData.grade_a_count}/24 Grade A)
+              {t.formation.yield} {batchData.yield_pct.toFixed(1)}% ({batchData.grade_a_count}/24 {t.common.gradeA})
             </Badge>
             <Badge variant="outline" className="font-mono text-xs">
-              Cpk: {spcData.cpk.toFixed(2)} (Six-Sigma Conforme)
+              Cpk: {spcData.cpk.toFixed(2)} (6σ)
             </Badge>
           </div>
         </div>
@@ -105,32 +107,34 @@ export default function FormationPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <CardTitle className="text-sm font-semibold text-foreground">
-                    Qualification Statistique du Procédé
+                    {t.formation.processQualificationTitle}
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Matrice de tri par quadrants IATF 16949 et carte de contrôle SPC Shewhart.
+                    {t.formation.processQualificationDesc}
                   </CardDescription>
                 </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <Tabs defaultValue="screening" className="w-full">
-                <TabsList className="mb-3">
+                <TabsList className="mb-3 h-auto flex-wrap">
                   <TabsTrigger
                     value="screening"
                     data-tour="tab-screening"
                     className="text-xs cursor-pointer gap-1.5"
                   >
-                    <SlidersHorizontal className="size-3.5" />
-                    Quadrants de Tri (K-Value vs DCIR)
+                    <SlidersHorizontal className="size-3.5 shrink-0" />
+                    <span className="hidden sm:inline">{t.formation.tabScreening}</span>
+                    <span className="sm:hidden">{t.formation.tabScreeningShort}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="spc"
                     data-tour="tab-spc"
                     className="text-xs cursor-pointer gap-1.5"
                   >
-                    <BarChart3 className="size-3.5" />
-                    Carte de Contrôle SPC Shewhart (Capacité Ah)
+                    <BarChart3 className="size-3.5 shrink-0" />
+                    <span className="hidden sm:inline">{t.formation.tabSpc}</span>
+                    <span className="sm:hidden">{t.formation.tabSpcShort}</span>
                   </TabsTrigger>
                 </TabsList>
 

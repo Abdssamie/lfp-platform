@@ -13,6 +13,7 @@ import {
   Legend,
 } from "recharts";
 import type { LfpDQDV } from "@/types/api";
+import { usePlatformTranslation } from "@/lib/translations";
 
 interface LfpDQDVChartProps {
   data: LfpDQDV | null;
@@ -26,15 +27,16 @@ interface CustomTooltipProps {
     color: string;
   }>;
   label?: number;
+  isFr?: boolean;
 }
 
-function DQDVTooltip({ active, payload, label }: CustomTooltipProps) {
+function DQDVTooltip({ active, payload, label, isFr }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
 
   return (
     <div className="rounded-lg border border-border bg-popover/95 p-3 font-mono text-xs shadow-xl backdrop-blur-sm">
       <div className="flex items-center justify-between gap-6 pb-2 mb-2 border-b border-border/60">
-        <span className="font-semibold text-foreground">Cell Potential</span>
+        <span className="font-semibold text-foreground">{isFr ? "Potentiel Cellule" : "Cell Potential"}</span>
         <span className="text-muted-foreground">{Number(label).toFixed(4)} V</span>
       </div>
       <div className="flex flex-col gap-1.5 text-xs">
@@ -52,12 +54,13 @@ function DQDVTooltip({ active, payload, label }: CustomTooltipProps) {
 }
 
 export function LfpDQDVChart({ data }: LfpDQDVChartProps) {
+  const { isFr } = usePlatformTranslation();
   const [viewMode, setViewMode] = useState<"both" | "charge" | "discharge">("both");
 
   if (!data || data.v_grid.length === 0) {
     return (
-      <div className="flex h-96 items-center justify-center font-mono text-xs text-muted-foreground">
-        No dQ/dV phase curve available.
+      <div className="flex h-56 sm:h-72 lg:h-96 items-center justify-center font-mono text-xs text-muted-foreground">
+        {isFr ? "Aucune courbe dQ/dV disponible." : "No dQ/dV phase curve available."}
       </div>
     );
   }
@@ -73,7 +76,7 @@ export function LfpDQDVChart({ data }: LfpDQDVChartProps) {
       {/* Controls Header */}
       <div className="flex items-center justify-between text-xs font-mono">
         <span className="text-muted-foreground">
-          Phase Peak: <strong className="text-foreground">{data.charge_peak_v.toFixed(3)}V (Chg)</strong> / <strong className="text-foreground">{data.discharge_peak_v.toFixed(3)}V (Dchg)</strong> · Hysteresis: <strong className="text-foreground font-semibold">{data.delta_v_hysteresis_mv.toFixed(1)} mV</strong>
+          {isFr ? "Pics Redox :" : "Phase Peak:"} <strong className="text-foreground">{data.charge_peak_v.toFixed(3)}V ({isFr ? "Chg" : "Chg"})</strong> / <strong className="text-foreground">{data.discharge_peak_v.toFixed(3)}V ({isFr ? "Dchg" : "Dchg"})</strong> · {isFr ? "Hystérèse :" : "Hysteresis:"} <strong className="text-foreground font-semibold">{data.delta_v_hysteresis_mv.toFixed(1)} mV</strong>
         </span>
 
         <div className="flex items-center gap-1 bg-muted/50 rounded-md p-1 border border-border/60">
@@ -86,7 +89,7 @@ export function LfpDQDVChart({ data }: LfpDQDVChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Both Peaks
+            {isFr ? "Les Deux" : "Both Peaks"}
           </button>
           <button
             type="button"
@@ -97,7 +100,7 @@ export function LfpDQDVChart({ data }: LfpDQDVChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Charge Peak
+            {isFr ? "Charge" : "Charge Peak"}
           </button>
           <button
             type="button"
@@ -108,13 +111,13 @@ export function LfpDQDVChart({ data }: LfpDQDVChartProps) {
                 : "text-muted-foreground hover:text-foreground"
             }`}
           >
-            Discharge Peak
+            {isFr ? "Décharge" : "Discharge Peak"}
           </button>
         </div>
       </div>
 
       {/* Spacious Chart Area */}
-      <div className="w-full h-96 min-w-0">
+      <div className="w-full h-56 sm:h-72 lg:h-96 min-w-0">
         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <AreaChart data={chartData} margin={{ top: 16, right: 32, left: 8, bottom: 12 }}>
             <defs>
@@ -143,7 +146,7 @@ export function LfpDQDVChart({ data }: LfpDQDVChartProps) {
               tickLine={false}
               width={54}
             />
-            <Tooltip content={<DQDVTooltip />} />
+            <Tooltip content={<DQDVTooltip isFr={isFr} />} />
             <Legend
               verticalAlign="top"
               align="right"
@@ -160,7 +163,7 @@ export function LfpDQDVChart({ data }: LfpDQDVChartProps) {
                 strokeDasharray="4 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Chg: ${data.charge_peak_v.toFixed(3)}V`,
+                  value: `${isFr ? "Chg" : "Chg"}: ${data.charge_peak_v.toFixed(3)}V`,
                   position: "top",
                   fill: "#10b981",
                   fontSize: 10,
@@ -175,7 +178,7 @@ export function LfpDQDVChart({ data }: LfpDQDVChartProps) {
                 strokeDasharray="4 4"
                 strokeWidth={1.5}
                 label={{
-                  value: `Dchg: ${data.discharge_peak_v.toFixed(3)}V`,
+                  value: `${isFr ? "Dchg" : "Dchg"}: ${data.discharge_peak_v.toFixed(3)}V`,
                   position: "insideTopLeft",
                   fill: "#06b6d4",
                   fontSize: 10,
@@ -187,7 +190,7 @@ export function LfpDQDVChart({ data }: LfpDQDVChartProps) {
               <Area
                 type="monotone"
                 dataKey="charge_dqdv"
-                name="Charge dQ/dV"
+                name={isFr ? "dQ/dV Charge" : "Charge dQ/dV"}
                 stroke="#10b981"
                 strokeWidth={2.4}
                 fill="url(#lfpChargeGradient)"
@@ -198,7 +201,7 @@ export function LfpDQDVChart({ data }: LfpDQDVChartProps) {
               <Area
                 type="monotone"
                 dataKey="discharge_dqdv"
-                name="Discharge dQ/dV"
+                name={isFr ? "dQ/dV Décharge" : "Discharge dQ/dV"}
                 stroke="#06b6d4"
                 strokeWidth={2.4}
                 fill="url(#lfpDischargeGradient)"

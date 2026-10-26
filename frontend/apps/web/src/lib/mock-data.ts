@@ -278,24 +278,116 @@ export const MOCK_LFP: LfpDatasetResponse = {
     total_runtime_h: 24.2,
     total_rows: 14400,
     total_steps: 8,
-    cell_weight_g: 1150.0,
+    cell_weight_g: 850.0,
     plateau_fraction_pct: 78.5,
   },
-  telemetry: Array.from({ length: 40 }, (_, i) => ({
-    runtime_h: parseFloat(((i * 0.05).toFixed(2))),
-    voltage_v: parseFloat((3.15 + (i / 40) * 0.45).toFixed(3)),
-    current_a: 25.0,
-    capacity_ah: parseFloat(((i / 40) * 50.0).toFixed(2)),
-    soc: parseFloat(((i / 40)).toFixed(2)),
-    step_type: "CC_Chg",
-    c_rate: "0.5C",
-  })),
-  vq_curves: Array.from({ length: 40 }, (_, i) => ({
-    capacity_ah: parseFloat(((i / 40) * 50.0).toFixed(2)),
-    voltage_v: parseFloat((3.12 + Math.pow(i / 40, 0.4) * 0.46).toFixed(3)),
-    rate_label: "0.5C",
-    step_type: "CC_Chg",
-  })),
+  telemetry: [
+    // Charge half-cycle (0h to 12.25h) at C/12 (+4.08A)
+    ...Array.from({ length: 50 }, (_, i) => {
+      const frac = i / 49;
+      const tH = frac * 12.25;
+      const v = frac < 0.1
+        ? 3.10 + frac * 2.4
+        : frac > 0.9
+        ? 3.42 + (frac - 0.9) * 2.3
+        : 3.34 + frac * 0.08;
+      return {
+        runtime_h: parseFloat(tH.toFixed(2)),
+        voltage_v: parseFloat(v.toFixed(3)),
+        current_a: 4.08,
+        capacity_ah: parseFloat((frac * 50.0).toFixed(2)),
+        soc: parseFloat(frac.toFixed(2)),
+        step_type: "Charge",
+        c_rate: "C/12 (0.08C)",
+      };
+    }),
+    // Discharge half-cycle (12.25h to 24.5h) at C/12 (-4.08A)
+    ...Array.from({ length: 50 }, (_, i) => {
+      const frac = i / 49;
+      const tH = 12.25 + frac * 12.25;
+      const dFrac = 1 - frac;
+      const v = frac < 0.1
+        ? 3.38 - frac * 0.8
+        : frac > 0.9
+        ? 3.26 - (frac - 0.9) * 4.6
+        : 3.30 - frac * 0.05;
+      return {
+        runtime_h: parseFloat(tH.toFixed(2)),
+        voltage_v: parseFloat(v.toFixed(3)),
+        current_a: -4.08,
+        capacity_ah: parseFloat((dFrac * 50.0).toFixed(2)),
+        soc: parseFloat(dFrac.toFixed(2)),
+        step_type: "Discharge",
+        c_rate: "C/12 (0.08C)",
+      };
+    }),
+  ],
+  vq_curves: [
+    // C/12 Charge (0.08C - 4.08A)
+    ...Array.from({ length: 45 }, (_, i) => {
+      const q = (i / 44) * 50.0;
+      const frac = i / 44;
+      const v = frac < 0.08
+        ? 3.05 + frac * 3.75
+        : frac > 0.92
+        ? 3.42 + (frac - 0.92) * 2.875
+        : 3.35 + frac * 0.07;
+      return {
+        capacity_ah: parseFloat(q.toFixed(2)),
+        voltage_v: parseFloat(v.toFixed(3)),
+        rate_label: "C/12 Charge (4.08A)",
+        step_type: "Charge",
+      };
+    }),
+    // C/12 Discharge (0.08C - 4.08A)
+    ...Array.from({ length: 45 }, (_, i) => {
+      const q = (i / 44) * 50.0;
+      const frac = i / 44;
+      const v = frac < 0.08
+        ? 3.35 - frac * 0.75
+        : frac > 0.92
+        ? 3.27 - (frac - 0.92) * 3.375
+        : 3.29 - frac * 0.04;
+      return {
+        capacity_ah: parseFloat(q.toFixed(2)),
+        voltage_v: parseFloat(v.toFixed(3)),
+        rate_label: "C/12 Discharge (4.08A)",
+        step_type: "Discharge",
+      };
+    }),
+    // C/6 Charge (0.17C - 8.17A) - Higher overpotential
+    ...Array.from({ length: 45 }, (_, i) => {
+      const q = (i / 44) * 49.5;
+      const frac = i / 44;
+      const v = frac < 0.08
+        ? 3.12 + frac * 3.8
+        : frac > 0.92
+        ? 3.45 + (frac - 0.92) * 2.5
+        : 3.40 + frac * 0.06;
+      return {
+        capacity_ah: parseFloat(q.toFixed(2)),
+        voltage_v: parseFloat(v.toFixed(3)),
+        rate_label: "C/6 Charge (8.17A)",
+        step_type: "Charge",
+      };
+    }),
+    // C/6 Discharge (0.17C - 8.17A) - Lower overpotential
+    ...Array.from({ length: 45 }, (_, i) => {
+      const q = (i / 44) * 49.5;
+      const frac = i / 44;
+      const v = frac < 0.08
+        ? 3.30 - frac * 0.8
+        : frac > 0.92
+        ? 3.22 - (frac - 0.92) * 3.25
+        : 3.24 - frac * 0.04;
+      return {
+        capacity_ah: parseFloat(q.toFixed(2)),
+        voltage_v: parseFloat(v.toFixed(3)),
+        rate_label: "C/6 Discharge (8.17A)",
+        step_type: "Discharge",
+      };
+    }),
+  ],
   dqdv_curve: {
     v_grid: Array.from({ length: 30 }, (_, i) => parseFloat((3.2 + (i / 30) * 0.35).toFixed(3))),
     charge_dqdv: Array.from({ length: 30 }, (_, i) => {

@@ -3,14 +3,30 @@
 import * as React from "react";
 import { useSyncExternalStore } from "react";
 
+interface TourState {
+  isRunning: boolean;
+  stepIndex: number;
+  isNavigating: boolean;
+}
+
 interface TourContextType {
   isTourRunning: boolean;
+  tourStepIndex: number;
+  isTourNavigating: boolean;
   startTour: () => void;
   stopTour: () => void;
+  setTourStepIndex: (index: number) => void;
+  setTourNavigating: (isNavigating: boolean) => void;
+  setStepIndexAndNavigating: (index: number, isNavigating: boolean) => void;
   checkAutoStart: (pageKey: string) => void;
 }
 
-let isRunning = false;
+let state: TourState = {
+  isRunning: false,
+  stepIndex: 0,
+  isNavigating: false,
+};
+
 const listeners = new Set<() => void>();
 
 function emitChange() {
@@ -24,28 +40,40 @@ export const tourStore = {
       listeners.delete(listener);
     };
   },
-  getSnapshot(): boolean {
-    return isRunning;
+  getSnapshot(): TourState {
+    return state;
   },
-  getServerSnapshot(): boolean {
-    return false;
+  getServerSnapshot(): TourState {
+    return { isRunning: false, stepIndex: 0, isNavigating: false };
   },
   startTour() {
-    isRunning = true;
+    state = { isRunning: true, stepIndex: 0, isNavigating: false };
     emitChange();
   },
   stopTour() {
-    isRunning = false;
+    state = { isRunning: false, stepIndex: 0, isNavigating: false };
+    emitChange();
+  },
+  setStepIndex(index: number) {
+    state = { ...state, stepIndex: index };
+    emitChange();
+  },
+  setNavigating(isNavigating: boolean) {
+    state = { ...state, isNavigating };
+    emitChange();
+  },
+  setStepIndexAndNavigating(index: number, isNavigating: boolean) {
+    state = { ...state, stepIndex: index, isNavigating };
     emitChange();
   },
   checkAutoStart(pageKey: string) {
     if (typeof window === "undefined" || !pageKey) return;
-    const storageKey = `lfp_tour_seen_${pageKey}`;
+    const storageKey = `lfp_guide_seen_${pageKey}`;
     try {
       const alreadySeen = localStorage.getItem(storageKey);
-      if (!alreadySeen) {
+      if (!alreadySeen && pageKey === "formation") {
         localStorage.setItem(storageKey, "true");
-        isRunning = true;
+        state = { isRunning: true, stepIndex: 0, isNavigating: false };
         emitChange();
       }
     } catch {
@@ -57,7 +85,7 @@ export const tourStore = {
 const TourContext = React.createContext<TourContextType | null>(null);
 
 export function TourProvider({ children }: { children: React.ReactNode }) {
-  const isTourRunning = useSyncExternalStore(
+  const tourState = useSyncExternalStore(
     tourStore.subscribe,
     tourStore.getSnapshot,
     tourStore.getServerSnapshot
@@ -65,12 +93,17 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
   const value = React.useMemo<TourContextType>(
     () => ({
-      isTourRunning,
+      isTourRunning: tourState.isRunning,
+      tourStepIndex: tourState.stepIndex,
+      isTourNavigating: tourState.isNavigating,
       startTour: tourStore.startTour,
       stopTour: tourStore.stopTour,
+      setTourStepIndex: tourStore.setStepIndex,
+      setTourNavigating: tourStore.setNavigating,
+      setStepIndexAndNavigating: tourStore.setStepIndexAndNavigating,
       checkAutoStart: tourStore.checkAutoStart,
     }),
-    [isTourRunning]
+    [tourState]
   );
 
   return <TourContext.Provider value={value}>{children}</TourContext.Provider>;

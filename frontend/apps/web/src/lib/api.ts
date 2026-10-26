@@ -21,6 +21,13 @@ async function handleResponse<T>(res: Response): Promise<T> {
     const errorText = await res.text();
     throw new Error(`API Error ${res.status}: ${errorText || res.statusText}`);
   }
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    const previewText = await res.text();
+    throw new Error(
+      `Invalid API response format: received ${contentType || "HTML"} instead of JSON (${previewText.slice(0, 60)}...)`
+    );
+  }
   return res.json() as Promise<T>;
 }
 

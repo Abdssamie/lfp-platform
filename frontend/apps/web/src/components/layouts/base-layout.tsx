@@ -3,7 +3,6 @@
 import * as React from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TourProvider } from "@/components/guided-tour/tour-context";
 import { GuidedTour } from "@/components/guided-tour/guided-tour";
@@ -34,9 +33,13 @@ export function BaseLayout({ children, title, description }: BaseLayoutProps) {
               <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
                 {title && (
                   <div className="px-4 lg:px-6">
-                    <div className="flex flex-col gap-2">
-                      <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-                      {description && <p className="text-muted-foreground">{description}</p>}
+                    <div className="flex flex-col gap-1.5">
+                      <h1 className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight leading-tight">{title}</h1>
+                      {description && (
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-none">
+                          {description}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -44,7 +47,6 @@ export function BaseLayout({ children, title, description }: BaseLayoutProps) {
               </div>
             </div>
           </div>
-          <SiteFooter />
         </SidebarInset>
       </SidebarProvider>
       <GuidedTour />
