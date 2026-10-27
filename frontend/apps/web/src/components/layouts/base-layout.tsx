@@ -33,7 +33,7 @@ export function BaseLayout({ children, title, description }: BaseLayoutProps) {
               <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
                 {title && (
                   <div className="px-4 lg:px-6">
-                    <div className="flex flex-col gap-1.5">
+                    <div data-tour="platform-header" className="flex flex-col gap-1.5">
                       <h1 className="text-lg sm:text-xl lg:text-2xl font-bold tracking-tight leading-tight">{title}</h1>
                       {description && (
                         <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-none">

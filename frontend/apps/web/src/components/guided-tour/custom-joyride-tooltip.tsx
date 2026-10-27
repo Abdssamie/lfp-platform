@@ -69,7 +69,7 @@ export function CustomJoyrideTooltip({
       </div>
 
       {/* Concise Purpose-Driven Description */}
-      <div className="text-xs text-muted-foreground leading-relaxed my-2.5">
+      <div className="text-xs text-muted-foreground leading-relaxed my-2.5 whitespace-pre-line">
         {step.content}
       </div>
 
