@@ -32,17 +32,16 @@ The application is packaged into three containerized services running on a dedic
      - Compose Path: `docker-compose.yml`
    - *Or choose **Raw**: copy-paste the contents of [`docker-compose.yml`](./docker-compose.yml).*
 
-### Step 3: Configure Environment Variables
-In the Dokploy **Environment** tab, add any necessary overrides (see [`.env.example`](./.env.example)):
+### Step 3: Configure Environment Variables (Optional)
+In the Dokploy **Environment** tab, set standard runtime variables (host port mappings are not needed on Dokploy since Traefik handles ingress routing):
 
 ```ini
-GATEWAY_PORT=80
-FRONTEND_PORT=3000
-BACKEND_PORT=8000
 CORS_ORIGINS=*
 NODE_ENV=production
 FASTAPI_INTERNAL_URL=http://backend:8000
 ```
+
+> **Note on Ports**: Dokploy runs Traefik on host ports 80/443. The Compose stack uses `expose` instead of binding host ports, so you will never encounter `Bind for 0.0.0.0:80 failed: port is already allocated`. Dokploy routes your domain directly to the internal `gateway` container on port 80.
 
 ### Step 4: Configure Domain & SSL
 1. Go to the **Domains** tab in your Dokploy Compose service.

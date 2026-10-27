@@ -6,10 +6,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.backend
-    container_name: lfp-backend
     restart: unless-stopped
-    ports:
-      - "${BACKEND_PORT:-8000}:8000"
+    expose:
+      - "8000"
     environment:
       - PORT=8000
       - CORS_ORIGINS=${CORS_ORIGINS:-*}
@@ -24,13 +23,6 @@ services:
       start_period: 15s
     networks:
       - lfp-network
-    # Optional Traefik labels if routing API directly via Dokploy
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.http.routers.lfp-api.rule=Host(`api.yourdomain.com`)"
-    #   - "traefik.http.routers.lfp-api.entrypoints=websecure"
-    #   - "traefik.http.routers.lfp-api.tls.certresolver=letsencrypt"
-    #   - "traefik.http.services.lfp-api.loadbalancer.server.port=8000"
 
   # =============================================================================
   # 2. TanStack Start / React Web Frontend
@@ -39,7 +31,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    container_name: lfp-frontend
     restart: unless-stopped
     expose:
       - "3000"
@@ -61,7 +52,7 @@ services:
       - lfp-network
 
   # =============================================================================
-  # 3. Gateway Reverse Proxy (Unified Single Entry Point for Dokploy)
+  # 3. Gateway Reverse Proxy (Unified Single Entry Point for Dokploy / Traefik)
   # Routes:
   #   - /api/*          -> backend:8000
   #   - /docs           -> backend:8000
@@ -70,11 +61,10 @@ services:
   # =============================================================================
   gateway:
     image: nginx:alpine
-    container_name: lfp-gateway
     restart: unless-stopped
-    ports:
-      - "${GATEWAY_PORT:-80}:80"
-      - "${FRONTEND_PORT:-3000}:3000"
+    expose:
+      - "80"
+      - "3000"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
@@ -90,13 +80,6 @@ services:
       start_period: 5s
     networks:
       - lfp-network
-    # Dokploy Traefik configuration (Uncomment and replace domain if routing via labels)
-    # labels:
-    #   - "traefik.enable=true"
-    #   - "traefik.http.routers.lfp-platform.rule=Host(`lfp.yourdomain.com`)"
-    #   - "traefik.http.routers.lfp-platform.entrypoints=websecure"
-    #   - "traefik.http.routers.lfp-platform.tls.certresolver=letsencrypt"
-    #   - "traefik.http.services.lfp-platform.loadbalancer.server.port=80"
 
 networks:
   lfp-network:

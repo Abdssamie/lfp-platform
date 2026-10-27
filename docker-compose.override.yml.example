@@ -1,0 +1,20 @@
+# =============================================================================
+# Local Development Port Bindings (Docker Compose Override)
+# =============================================================================
+# Use this file to expose ports to your local host machine when developing locally.
+# Dokploy runs Traefik on port 80/443 and manages routing via domains, so host
+# ports are NOT bound in the main docker-compose.yml to avoid "port allocated" errors.
+#
+# To use locally:
+#   cp docker-compose.override.yml.example docker-compose.override.yml
+# =============================================================================
+
+services:
+  backend:
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+
+  gateway:
+    ports:
+      - "${GATEWAY_PORT:-80}:80"
+      - "${FRONTEND_PORT:-3000}:3000"
