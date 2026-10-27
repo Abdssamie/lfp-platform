@@ -5,7 +5,7 @@ import { Joyride, STATUS, ACTIONS, EVENTS, type Step, type EventData } from "rea
 import { useLocation } from "@tanstack/react-router";
 import { useTour } from "./tour-context";
 import { CustomJoyrideTooltip } from "./custom-joyride-tooltip";
-import { activateTourTab } from "./tour-utils";
+import { activateTourTab, ensureSidebarOpen } from "./tour-utils";
 import { usePlatformTranslation } from "@/lib/translations";
 
 const EmptyBeacon = () => null;
@@ -74,6 +74,19 @@ export function getPageTourSteps(page: PageKey, isFr: boolean): TourStep[] {
             : "Tracks discharged capacity channel-by-channel against average X̄ and ±3σ control limits (UCL/LCL) demonstrating Six-Sigma manufacturing stability.",
           skipBeacon: true,
           beforeStep: () => activateTourTab('[data-tour="tab-spc"]').then(() => undefined),
+        },
+        {
+          page: "formation",
+          target: '[data-tour="sidebar-next-workstations"]',
+          placement: "right",
+          title: isFr
+            ? "À Explorer Ensuite : Cyclage & Simulation BTMS"
+            : "Explore Next: Cycler Lab & BTMS Simulation",
+          content: isFr
+            ? "Vous avez découvert la ligne de formation et le tri IATF 16949 !\n\nPoursuivez votre exploration via les 2 autres postes d'ingénierie dans la barre latérale :\n• Cycler Lab Curves : cinétique de diffusion GITT, plateau biphasique dQ/dV (3.42V) et bancs d'essais Neware/Novonix.\n• BTMS Thermal Simulator : modélisation thermique 1D sous charge rapide 3C (solveur RK45 & équilibre de Bernardi)."
+            : "You've completed the formation line and IATF 16949 quality tour!\n\nContinue exploring the other 2 engineering workstations in the sidebar:\n• Cycler Lab Curves: solid-state GITT kinetics, dQ/dV phase transitions (3.42V), and authentic Neware/Novonix cycler benches.\n• BTMS Thermal Simulator: coupled 1D electro-thermal modeling under 3C fast charge (RK45 ODE solver & Bernardi heat balance).",
+          skipBeacon: true,
+          beforeStep: () => ensureSidebarOpen().then(() => undefined),
         },
       ];
 

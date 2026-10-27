@@ -46,3 +46,37 @@ export function activateTourTab(selector: string): Promise<boolean> {
     setTimeout(checkActive, 25);
   });
 }
+
+/**
+ * Utility helper to ensure the sidebar is expanded so sidebar targets are spotlighted accurately.
+ */
+export function ensureSidebarOpen(): Promise<boolean> {
+  if (typeof document === "undefined") return Promise.resolve(false);
+
+  const target = document.querySelector<HTMLElement>('[data-tour="sidebar-next-workstations"]');
+  if (target && target.getBoundingClientRect().width > 0 && target.getBoundingClientRect().height > 0) {
+    return Promise.resolve(true);
+  }
+
+  // If sidebar is collapsed or on mobile, find trigger and click it
+  const trigger = document.querySelector<HTMLButtonElement>(
+    '[data-sidebar="trigger"], [data-slot="sidebar-trigger"]'
+  );
+  if (trigger) {
+    trigger.click();
+  }
+
+  return new Promise((resolve) => {
+    let attempts = 0;
+    const checkTarget = () => {
+      attempts++;
+      const el = document.querySelector<HTMLElement>('[data-tour="sidebar-next-workstations"]');
+      if ((el && el.getBoundingClientRect().width > 0) || attempts >= 8) {
+        resolve(true);
+      } else {
+        setTimeout(checkTarget, 30);
+      }
+    };
+    setTimeout(checkTarget, 30);
+  });
+}

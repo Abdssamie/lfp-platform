@@ -71,7 +71,10 @@ export const tourStore = {
     const storageKey = `lfp_guide_seen_${pageKey}`;
     try {
       const alreadySeen = localStorage.getItem(storageKey);
-      if (!alreadySeen && pageKey === "formation") {
+      if (
+        !alreadySeen &&
+        (pageKey === "formation" || pageKey === "cyclers" || pageKey === "btms")
+      ) {
         localStorage.setItem(storageKey, "true");
         state = { isRunning: true, stepIndex: 0, isNavigating: false };
         emitChange();

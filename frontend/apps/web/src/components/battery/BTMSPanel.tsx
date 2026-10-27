@@ -44,40 +44,17 @@ import {
   Legend,
 } from "recharts";
 import { simulateBTMS } from "@/lib/api";
+import { solveBTMSSimulation } from "@/lib/btms-solver";
 import type { BTMSResponse, BTMSRequest } from "@/types/api";
 import { usePlatformTranslation } from "@/lib/translations";
 import { useTour } from "@/components/guided-tour/tour-context";
 
-const DEFAULT_SIMULATION: BTMSResponse = {
+const DEFAULT_SIMULATION: BTMSResponse = solveBTMSSimulation({
   c_rate: 2.0,
   ambient_temp_c: 25.0,
   coolant_flow_lpm: 4.0,
   cell_capacity_ah: 50.0,
-  duration_s: 1200.0,
-  max_core_temp_c: 38.45,
-  max_surface_temp_c: 36.12,
-  max_thermal_gradient_c: 2.33,
-  is_compliant: true,
-  time_series: Array.from({ length: 41 }, (_, i) => {
-    const t = i * 30;
-    const soc = Math.min(1.0, (t / 1200) * 0.8 + 0.1);
-    const qJoule = 12.0 + Math.sin(i / 10) * 3.5;
-    const qEntropic = -2.1 + (soc - 0.5) * 4.2;
-    const qTotal = qJoule + qEntropic;
-    const tSurf = 25.0 + 11.12 * (1 - Math.exp(-t / 400));
-    const tCore = tSurf + 2.33 * (1 - Math.exp(-t / 300));
-    return {
-      time_s: t,
-      soc: parseFloat(soc.toFixed(3)),
-      t_core_c: parseFloat(tCore.toFixed(2)),
-      t_surf_c: parseFloat(tSurf.toFixed(2)),
-      delta_t_c: parseFloat((tCore - tSurf).toFixed(2)),
-      q_joule_w: parseFloat(qJoule.toFixed(2)),
-      q_entropic_w: parseFloat(qEntropic.toFixed(2)),
-      q_total_w: parseFloat(qTotal.toFixed(2)),
-    };
-  }),
-};
+});
 
 export function BTMSPanel() {
   const { t, isFr } = usePlatformTranslation();
@@ -107,8 +84,8 @@ export function BTMSPanel() {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "BTMS simulation request failed";
-      setErrorMsg(msg);
-      // Fallback to default simulation if backend unreachable so user still has rich data
+      const cleanMsg = msg.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 100);
+      setErrorMsg(cleanMsg);
       setData(DEFAULT_SIMULATION);
       if (isTourRunning && tourStepIndex === 1) {
         setTourStepIndex(2);

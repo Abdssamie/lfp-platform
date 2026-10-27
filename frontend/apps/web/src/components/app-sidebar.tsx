@@ -102,10 +102,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupLabel>{workstationsHeader}</SidebarGroupLabel>
           <SidebarMenu>
-            {workstationItems.map((item) => {
+            {/* Formation Workstation */}
+            {workstationItems.slice(0, 1).map((item) => {
               const Icon = item.icon;
               return (
-                <SidebarMenuItem key={item.url}>
+                <SidebarMenuItem key={item.url} data-tour="sidebar-formation">
                   <SidebarMenuButton
                     asChild
                     isActive={item.isActive}
@@ -120,6 +121,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenuItem>
               );
             })}
+
+            {/* Other 2 Workstations: Cyclers & BTMS */}
+            <div data-tour="sidebar-next-workstations" className="flex flex-col gap-1">
+              {workstationItems.slice(1).map((item) => {
+                const Icon = item.icon;
+                return (
+                  <SidebarMenuItem
+                    key={item.url}
+                    data-tour={item.url === "/cyclers" ? "sidebar-cyclers" : "sidebar-btms"}
+                  >
+                    <SidebarMenuButton
+                      asChild
+                      isActive={item.isActive}
+                      tooltip={item.title}
+                      className="cursor-pointer"
+                    >
+                      <LocalizedLink to={item.url}>
+                        <Icon className="size-4" />
+                        <span>{item.title}</span>
+                      </LocalizedLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </div>
           </SidebarMenu>
         </SidebarGroup>
 

@@ -10,16 +10,32 @@ import type {
   BTMSRequest,
   BTMSResponse,
 } from "@/types/api";
+import { solveBTMSSimulation } from "./btms-solver";
 
-const API_BASE =
-  typeof window !== "undefined"
-    ? ""
-    : process.env.FASTAPI_INTERNAL_URL || "http://127.0.0.1:8000";
+function getApiBase(): string {
+  if (typeof window !== "undefined") {
+    const envUrl = (import.meta.env.VITE_API_URL as string | undefined)?.trim();
+    return envUrl ? envUrl.replace(/\/$/, "") : "";
+  }
+
+  // Server-side / SSR resolution
+  return (
+    process.env.FASTAPI_INTERNAL_URL ||
+    process.env.VITE_API_URL ||
+    "http://backend:8000"
+  ).replace(/\/$/, "");
+}
+
+const API_BASE = getApiBase();
 
 async function handleResponse<T>(res: Response): Promise<T> {
   if (!res.ok) {
     const errorText = await res.text();
-    throw new Error(`API Error ${res.status}: ${errorText || res.statusText}`);
+    const cleanError =
+      errorText.includes("<!DOCTYPE") || errorText.includes("<html")
+        ? res.statusText || `HTTP ${res.status}`
+        : errorText.slice(0, 140);
+    throw new Error(`API Error ${res.status}: ${cleanError}`);
   }
   const contentType = res.headers.get("content-type") || "";
   if (!contentType.includes("application/json")) {
@@ -109,12 +125,17 @@ export async function fetchLfpDataset(): Promise<LfpDatasetResponse> {
 }
 
 export async function simulateBTMS(payload: BTMSRequest): Promise<BTMSResponse> {
-  const res = await fetch(`${API_BASE}/api/btms/simulate`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  return handleResponse<BTMSResponse>(res);
+  try {
+    const res = await fetch(`${API_BASE}/api/btms/simulate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    return await handleResponse<BTMSResponse>(res);
+  } catch (err) {
+    console.warn("FastAPI backend unreachable, calculating using embedded RK4 solver:", err);
+    return solveBTMSSimulation(payload);
+  }
 }
 
 

@@ -63,12 +63,14 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-cors_origins_env = os.getenv("CORS_ORIGINS", "")
+cors_origins_env = os.getenv("CORS_ORIGINS", "*")
 allowed_origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "http://localhost:3001",
     "http://127.0.0.1:3001",
+    "https://lfp.moondesk.tech",
+    "https://api.lfp.moondesk.tech",
 ]
 if cors_origins_env and cors_origins_env != "*":
     for origin in cors_origins_env.split(","):
@@ -76,11 +78,11 @@ if cors_origins_env and cors_origins_env != "*":
         if trimmed and trimmed not in allowed_origins:
             allowed_origins.append(trimmed)
 
-# Enable CORS for frontend and Dokploy deployment
+# Enable CORS for frontend, cross-subdomain API calls, and Dokploy deployment
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"] if cors_origins_env == "*" else allowed_origins,
-    allow_origin_regex=".*" if cors_origins_env == "*" else None,
+    allow_origin_regex=r"https://.*\.moondesk\.tech|http://(localhost|127\.0\.0\.1)(:\d+)?",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
