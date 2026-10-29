@@ -55,6 +55,13 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         href: appCss,
       },
     ],
+    scripts: [
+      {
+        src: "https://analytics.moondesk.tech/api/script.js",
+        "data-site-id": "5",
+        defer: true,
+      },
+    ],
   }),
 
   component: () => {
